@@ -1,4 +1,4 @@
-function [pV]=simpleSpreadPlot(Pos,data,colorBar,widthBar,sigFlag,widthLine)
+function [pV,H,H2]=simpleSpreadPlot(Pos,data,colorBar,widthBar,sigFlag,widthLine)
 % hbar=simpleBarPlot(Pos,data,colorBar,widthBar,colorError,sigFlag)
 pV=[];
 if nargin<6 || isempty(sigFlag)

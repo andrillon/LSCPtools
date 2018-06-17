@@ -1,4 +1,4 @@
-function [d] = calc_dprime(Hit,FA)
+function [d, c] = calc_dprime(Hit,FA)
 %[d] = calc_dprime(Hit,FA)
 
 % controle size
@@ -8,7 +8,10 @@ end
 if size(FA,1)>size(FA,2)
     FA=FA';
 end
-
+if isempty(Hit) & isempty(FA)
+    d=NaN; c=NaN;
+    return;
+end
 % take NaNs out
 Hit(isnan(Hit))=[];
 FA(isnan(FA))=[];
@@ -28,3 +31,6 @@ end
 % compute dprime
 d=(mean(Hit)-mean(FA))/...
     sqrt(0.5*(std(Hit)^2+std(FA)^2));
+
+% c = -0.5*[z(h)+z(fA)]
+c = -0.5*(norminv(nanmean(Hit))+ norminv(nanmean(FA)));

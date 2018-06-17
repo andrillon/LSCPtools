@@ -79,14 +79,15 @@ outPos=fpos;
 if baryF
 %     cminmax=(cdata-min(cdata))./max(cdata-min(cdata))-0.5;
 %     bary=nanmean(100*cpos.*repmat(cminmax,2,1),2);
-cY = mean(Y(M==1))
-cX = mean(X(M==1))
+cY = mean(Y(M==1));
+cX = mean(X(M==1));
 
     scatter(bary(1),bary(2),'Marker','+','MarkerEdgeColor','k','SizeData',72)
 end
 % xlim([-10 110])
 % ylim([-10 110])
 axis('equal')
+caxis([-1 1]*nanmax(abs(data)))
 
 set(gcf,'Color','w')
 set(gca,'Xcolor','w','Ycolor','w')
