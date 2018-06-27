@@ -38,7 +38,7 @@ dy      = (ymax-ymin)./100;
 x       = xmin:dx:xmax;
 y       = ymin:dy:ymax;
 [XI,YI] = meshgrid(x,y);
-dataI      = griddata(cpos(1,:)',cpos(2,:)',full(double(cdata')),XI,YI,'natural');
+dataI      = griddata(cpos(1,:)',cpos(2,:)',full(double(cdata')),XI,YI,'cubic');
 
 
 try

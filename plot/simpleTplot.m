@@ -14,8 +14,9 @@ function [pV hplot]=simpleTplot(x,y,newF,colorF,statsF,lineF,transpF,jbFlag,sthF
 % - transpF: transparency of the std fill (0->1)
 % - jbFlag: use jbfill or not
 % - sthFlag: 0 no smooth or smooth with window=sthFlag
-% perm
-% permutation (for ndim==2 only)
+% - errFlag: display or not the error estimate (1: yes; 2: dotted line; 0:
+% no)
+% - lineWidth: width of the lines plotted (normal: 1)
 % OUTPUTS:
 % - pV: pValues of the t-test
 % - hplot: handles of the curves
