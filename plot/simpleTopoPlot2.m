@@ -68,10 +68,14 @@ fpos(2,:) = fpos(2,:)./(dy);
 % fpos(2,:) = 100-fpos(2,:); 
 
 if labelsFlag>0
-    plot(fpos(1,:),fpos(2,:),...
-        'ko');
+    
     if labelsFlag==2
-    text(fpos(1,:),fpos(2,:),clabels);
+        plot(fpos(1,:),fpos(2,:),...
+        'k.');
+    text(fpos(1,:),fpos(2,:),clabels,'FontSize',12,'FontWeight','bold');
+    else
+        plot(fpos(1,:),fpos(2,:),...
+        'ko');
     end
 end
 outPos=fpos;

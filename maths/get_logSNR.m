@@ -41,7 +41,7 @@ for nCh=1:size(data,1)
             T=size(data,2)/SR;
             df = 1/T;
             subparam=[];
-            subparam.tapers=[df T 2*T*df-param.numTaper];
+            subparam.tapers=[df*T param.numTaper];
             subparam.Fs=SR;
             [pow,faxis]=mtspectrumc(signal,subparam);
         end
@@ -55,7 +55,7 @@ for nCh=1:size(data,1)
         mindist=param.mindist;
         length_kernel=length(-mindist+df:df:mindist-df);
         kernel=ones(1,length_kernel);
-        kernel((-mindist+df:df:mindist-df)>=-df & (-mindist+df:df:mindist-df)<=df)=0;
+        kernel((-mindist+df:df:mindist-df)>-df & (-mindist+df:df:mindist-df)<df)=0;
         kernel=kernel/sum(kernel);
         
         %%% apply kernel
