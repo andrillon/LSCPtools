@@ -8,8 +8,8 @@ function [hbar pV]=simpleBarPlot(Pos,data,colorBar,widthBar,colorError,sigFlag,w
 % - colorError  : color of the error bar (e.g. 'r' for red)
 % - sigFlag     : 3-elements cell
 %                       0, 1 or 2: no stat, param stat or non-param stat
-%                       p-value threshold (e.g. 0.05)
 %                       H0 (one value or vector to compare)
+%                       p-value threshold (e.g. 0.05)
 % - widthLine   : witdht of the bar line (eg 1)
 
 pV=[];

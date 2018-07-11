@@ -4,17 +4,17 @@
 %%% The function is based on the asumptions that REMs appears on EOG1 and EOG2 as big anti-phase delfections
 %%%
 %%% Input:
-%%% - HEOG, VEOG:      vectors of EOG data (1xtime stamps) (!!! already
+%%% - EOG1, EOG2:      vectors of EOG data (1xtime stamps) (!!! already
 %%% re-referenced to opposite MASTOIDS
 %%% - param: 
 %%%     - Fs:              sampling rate
-%%%     - thresholdParam:  [SD_BP SD_high] SD threshold for bandpass and high-bandpass filtered data
+%%%     - thresholdParam:  [SD_BP] SD threshold for bandpass
 %%%     - exclusionParam:  exckusion parameters: (1) max time duration between negcross and poscross (2) minimal duration between REMs (in seconds)
 %%%     - displayFlag:     set to 1 if you want to display summary
 %%%
 %%% Output:
 %%% - REMs:            Detected REMs. The matrix stores the following informations:
-%%%                   (1) Segment (2) Begin (3) End (4) Peak time (5) slope peak time (6) Peak EOG times (7) Peak ampl EOG1 (8) Peak ampl EOG2 (9) Slope max 1 (10) Slope max 2 (11) Duration (12) Stage
+%%%                   (1) Begin (2) End (3) Peak time (4) slope peak time (5) Peak EOG times (6) Peak ampl EOG1 (7) Peak ampl EOG2 (8) Slope max 1 (9) Slope max 2 (10) Duration (11) Stage
 %%% - false_detection: False detected events
 %%% - thresholds     : thesholds used for (1) product and (2) sum
 %%%
@@ -27,7 +27,7 @@
 %%% Last update: 2-28-12
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [REMs , false_detection] = detect_REMs_HEOG(HEOG, VEOG, param)
+function [REMs , false_detection] = detect_REMs_HEOG(EOG1, EOG2, param)
 
 %% Initialization
 REMs=[];
@@ -50,8 +50,8 @@ end
 Fs=param.Fs;
 
 % EOG1 and EOG2
-eog1=HEOG;
-eog2=VEOG;
+eog1=EOG1;
+eog2=EOG2;
 
 % (1) Broad bandpass
 eog1_Broad=bandpass(eog1,Fs,0.1,30,3);
@@ -62,7 +62,7 @@ eog1_BP=bandpass(eog1,Fs,0.1,3,3);
 eog2_BP=bandpass(eog2,Fs,0.1,3,3);
 
 % (3) Zscore
-if ~isempty(param.scoring)
+if ~isempty(scoring)
     eog1_BP=(eog1_BP-mean(eog1_BP(param.scoring==0)))/std(eog1_BP(param.scoring==0));
     eog2_BP=(eog2_BP-mean(eog2_BP(param.scoring==0)))/std(eog2_BP(param.scoring==0));
 else
@@ -77,7 +77,7 @@ grad_eog2=abs(eog2_BP(:,round(81*Fs/1000):end)-eog2_BP(:,1:end-round(80*Fs/1000)
 % fprintf('  ... took ... %g  s\n',toc)
 
 %% Detection REMs based on different criterions
-% fprintf('\n>>>> Detect REMs on HEOG ...\n')
+% fprintf('\n>>>> Detect REMs on EOG1 ...\n')
 eog_BP=eog1_BP;
 eog_Broad=eog1_Broad;
 grad_eog=grad_eog1;
@@ -158,7 +158,7 @@ for nREM=1:length(pos_candidates)
     % (6) find real peak in broadly band-passed EOG: if outside
     % pos_cross:neg_cross, discard
     % get broad BP eog
-    if peak_cross-0.5*Fs<1 || peak_cross+0.5*Fs>length(HEOG)
+    if peak_cross-0.5*Fs<1 || peak_cross+0.5*Fs>length(EOG1)
         continue;
     end
     thisrealeog=eog_Broad((-0.5*Fs:0.5*Fs)+peak_cross);
@@ -237,7 +237,7 @@ for nREM=1:length(pos_candidates)
 end
 
 
-fprintf('\n>>>> %g horizontal (%2.2f /min) REMs detected\n\n',size(REMs,1),size(REMs,1)/(length(HEOG)/param.Fs/60))
+fprintf('\n>>>> %g horizontal (%2.2f /min) REMs detected\n\n',size(REMs,1),size(REMs,1)/(length(EOG1)/param.Fs/60))
 
 %% Give an overview of results
 if displayFlag
