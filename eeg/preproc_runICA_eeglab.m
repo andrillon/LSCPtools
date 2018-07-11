@@ -14,12 +14,13 @@ fprintf('\n\nProcessing %s...\n',file_name);
 % load spm data
 D = spm_eeg_load([spm_datapath filesep file_name]);
 
-% reject aberrant channels
-maxVal=squeeze(max(abs(D(match_str(D.chantype,'EEG'),:,:)),[],2));
-wrongValues=maxVal>300;
-pprtionBad=mean(wrongValues,2);
-badChannels=find(pprtionBad>1/3);
-fprintf('... ... %g channels with >30%% of max values above 300uV\n',length(badChannels))
+% % % reject aberrant channels
+% % maxVal=squeeze(max(abs(D(match_str(D.chantype,'EEG'),:,:)),[],2));
+% % wrongValues=maxVal>300;
+% % pprtionBad=mean(wrongValues,2);
+% % badChannels=find(pprtionBad>1/3);
+% % fprintf('... ... %g channels with >30%% of max values above 300uV\n',length(badChannels))
+
 % restart eeglab
 ALLEEG = eeglab;
 
@@ -36,13 +37,19 @@ netfile = [param.name_sensfile]; % for wanderlust .xyz
 % if strcmp(param.type_sensfile,'.xyz')
 %     EEG = pop_chanedit(EEG,'load',{netfile, 'filetype', param.type_sensfile});
 % else
-    EEG = pop_chanedit(EEG,'load',{netfile, 'filetype', 'autodetect'});
+EEG = pop_chanedit(EEG,'load',{netfile, 'filetype', 'autodetect'});
 % end
 % EEG = pop_select( EEG,'nochannel',badChannels);
 
 EEG = eeg_checkset( EEG );
 eeglab redraw
 [ALLEEG EEG] = eeg_store(ALLEEG, EEG, 1);
+
+% Reject bad channels
+fprintf('Computing kurtosis for channels...\n');
+[ measure indelec ] = rejkurt( reshape(EEG.data, size(EEG.data,1), size(EEG.data,2)*size(EEG.data,3)), 5, [], 2);
+fprintf('... found %g bad channels with method: kurtosis\n',sum(indelec))
+badChannels=find(indelec);
 
 % Run the ICA
 chanica = setdiff(1:EEG.nbchan,badChannels);
@@ -207,7 +214,7 @@ if param.ica.interactive
         
         % updating meeg-object with new data (finally...)
         D(D.meegchannels,:,find(~D.reject)) = EEG.data; %#ok<FNDSB>
-  
+        
         D.save;
     end
     fprintf('\n\nVisual inspecion for %s done.\n', fname );
