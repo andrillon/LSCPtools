@@ -38,7 +38,7 @@ elseif method==2
     y = imodwt(wtrec,'sym4');
     
     [pks,peak_locs] = findpeaks(y,'MinPeakHeight',5,...
-        'MinPeakDistance',0.150);
+        'MinPeakDistance',0.4*D.fsample);
     
     min_interval=prctile(diff(peak_locs)/D.fsample,1);
     max_interval=prctile(diff(peak_locs)/D.fsample,99);
@@ -51,8 +51,8 @@ end
 if plotFlag
     figure;
     subplot(2,2,1:2); hold on; format_fig
-    plot(ECG_norm)
-    scatter(peak_locs,ECG_norm(peak_locs),'or')
+    plot(ECG_filt)
+    scatter(peak_locs,ECG_filt(peak_locs),'or')
     title('Heartbeat detection')
     
     % ERP on ECG
