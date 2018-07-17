@@ -47,9 +47,8 @@ maxVal=squeeze(max(abs(EEG.data),[],2));
 wrongValues=maxVal>300;
 pprtionBad=mean(wrongValues,2);
 badChannels=find(pprtionBad>1/3);
-indelec=[indelec badChannels];
-fprintf('... found %g bad channels with method: kurtosis\n',sum(indelec))
-badChannels=find(indelec);
+badChannels=[find(indelec); badChannels];
+fprintf('... found %g bad channels\n',length(badChannels))
 
 % Run the ICA
 chanica = setdiff(1:EEG.nbchan,badChannels);
