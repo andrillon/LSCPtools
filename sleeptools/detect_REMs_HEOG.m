@@ -14,7 +14,7 @@
 %%%
 %%% Output:
 %%% - REMs:            Detected REMs. The matrix stores the following informations:
-%%%                   (1) Begin (2) End (3) Peak time (4) slope peak time (5) Peak EOG times (6) Peak ampl EOG1 (7) Peak ampl EOG2 (8) Slope max 1 (9) Slope max 2 (10) Duration (11) Stage
+%%%                   (1) Begin (2) End (3) Peak time (4) slope peak time (5) Peak EOG times (6) Peak ampl EOG1 (7) Peak ampl EOG2 (8) Slope max 1 (9) Slope max 2 (10) Duration (11) Stage (12) Direction (12) Stage
 %%% - false_detection: False detected events
 %%% - thresholds     : thesholds used for (1) product and (2) sum
 %%%
@@ -62,13 +62,13 @@ eog1_BP=bandpass(eog1,Fs,0.1,3,3);
 eog2_BP=bandpass(eog2,Fs,0.1,3,3);
 
 % (3) Zscore
-if ~isempty(scoring)
-    eog1_BP=(eog1_BP-mean(eog1_BP(param.scoring==0)))/std(eog1_BP(param.scoring==0));
-    eog2_BP=(eog2_BP-mean(eog2_BP(param.scoring==0)))/std(eog2_BP(param.scoring==0));
-else
+% if ~isempty(scoring)
+%     eog1_BP=(eog1_BP-mean(eog1_BP(param.scoring==0)))/std(eog1_BP(param.scoring==0));
+%     eog2_BP=(eog2_BP-mean(eog2_BP(param.scoring==0)))/std(eog2_BP(param.scoring==0));
+% else
     eog1_BP   = zscore(eog1_BP);
     eog2_BP   = zscore(eog2_BP);
-end
+% end
 
 % (4) gradient
 grad_eog1=abs(eog1_BP(:,round(81*Fs/1000):end)-eog1_BP(:,1:end-round(80*Fs/1000)+1));
@@ -81,6 +81,10 @@ grad_eog2=abs(eog2_BP(:,round(81*Fs/1000):end)-eog2_BP(:,1:end-round(80*Fs/1000)
 eog_BP=eog1_BP;
 eog_Broad=eog1_Broad;
 grad_eog=grad_eog1;
+eog1_LP=bandpass(eog1,Fs,0.1,7,3);
+eog2_LP=bandpass(eog2,Fs,0.1,7,3);
+der_1 = diff(eog1_LP);
+der_2 = diff(eog2_LP);
 
 FlagEM=1;
 eog_BP_aboveThr=abs(eog_BP)>thresholdParam(1);
@@ -93,7 +97,21 @@ for nREM=1:length(pos_candidates)
     
     % (1) consider one 'positive' cross
     pos_cross=pos_candidates(nREM);
-    begin=pos_cross;
+    %     begin=pos_cross;
+    if pos_cross-50<=0
+        st_idx = 1;
+    else
+        st_idx = pos_cross-50;
+    end
+    dist1 = abs(der_1(st_idx:pos_cross));
+    [min_dist, idx1] = min(dist1);
+    begin1 = pos_cross - (length(dist1) - idx1)+1;
+    
+    dist2 = abs(der_2(st_idx:pos_cross));
+    [min_dist, idx2] = min(dist2);
+    begin2 = pos_cross - (length(dist2) - idx2)+1;
+    
+    begin=round((begin1+begin2)/2);
         if ~isempty(scoring)
         thisScore=scoring(begin);
     else
@@ -167,8 +185,16 @@ for nREM=1:length(pos_candidates)
     timemax_real1=find(thisrealeog==max_real1); timemax_real1=timemax_real1(1);
     peakTimeeog=peak_cross - 0.5*Fs + round(timemax_real1);
     
+    if eog1_BP(peak_cross)>thresholdParam(1)
+        dirREM=1;
+    elseif eog1_BP(peak_cross)<-thresholdParam(1)
+        dirREM=-1;
+    else
+        dirREM=0;
+    end
+        
     % check opposite signs and above threshold for the other one
-    thisrealeog2=eog2_Broad((-0.5*Fs:0.5*Fs)+peak_cross);
+    thisrealeog2=eog2_Broad(peak_cross);%(-0.5*Fs:0.5*Fs)+peak_cross
     max_real2=max(abs(thisrealeog2));
     if max_real2<thresholdParam(1)
         false_detection=[false_detection ; [
@@ -222,7 +248,9 @@ for nREM=1:length(pos_candidates)
             maxslope1, ... (8) Slope max 1
             maxslope2, ... (9) Slope max 1
             (neg_cross-pos_cross), ... (10) Duration
-            thisScore]]; %(11) vertical or horizontal
+            thisScore,... %(11) direction REM
+            dirREM,... %(12) direction REM
+            ]]; 
     else
         lastREM=peak_cross;
         false_detection=[false_detection ; [
