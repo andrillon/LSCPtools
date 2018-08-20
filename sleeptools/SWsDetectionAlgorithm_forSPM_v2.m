@@ -2,6 +2,7 @@
 % [upStateTimes, downStateTimes] = detect_SW_negative_withStage_segments_dealWithSAW_scalp_new('REC1M_EEG_BP.mat', 1000, 2000, 'stagingRevised.mat', 5);
 function [allWaves, slowWaves] = SWsDetectionAlgorithm_forSPM(D, SleepScoring_filename, paramDetection)
 % (EEG_filename, original_fs, desiredPercentOfSlowWaves, stagingFile, SAW_threshold, onlyThisStage)
+% v2 version adapted for SPM12
 allWaves = [];
 slowWaves=[];
 SR=D.fsample;
@@ -19,21 +20,21 @@ if isfield(paramDetection,'P2Pamp'),              P2Pamp=paramDetection.P2Pamp; 
 if length(SWband)==3
     S=[];
     S.D=D;
-    S.filter.type='but';
-    S.filter.order=SWband(3);
-    S.filter.band='bandpass';
-    S.filter.PHz=SWband;
-    S.filter.dir='twopass';
+    S.type='but';
+    S.order=SWband(3);
+    S.band='bandpass';
+    S.freq=SWband;
+    S.dir='twopass';
     S.save=0;
     Dfilt=spm_eeg_filter(S);
 else
     S=[];
     S.D=D;
-    S.filter.type='but';
-    S.filter.order=SWband(2);
-    S.filter.band='lowpass';
-    S.filter.PHz=SWband(1);
-    S.filter.dir='twopass';
+    S.type='but';
+    S.order=SWband(2);
+    S.band='lowpass';
+    S.freq=SWband(1);
+    S.dir='twopass';
     S.save=0;
     Dfilt=spm_eeg_filter(S);
 end
@@ -49,6 +50,9 @@ Dres=spm_eeg_downsample(S);
 SR=Dres.fsample;
 
 countChan=0;
+if size(ChannelSelection,1)>size(ChannelSelection,2)
+    ChannelSelection=ChannelSelection';
+end
 for nChan=ChannelSelection
     countChan=countChan+1;
     fprintf('... detecting SWs on %s (%g/%g)',Dres.chanlabels{nChan},countChan,length(ChannelSelection))
