@@ -42,13 +42,13 @@
 %%% --------------------------------------------
 
 
-function [spindles spindlesOutEnergy spindlesOutDuration] = SpindlesDetectionAlgorithm_forSPM12(D, SleepScoring_vector, paramDetection)
+function [spindles spindlesOutEnergy spindlesOutDuration] = SpindlesDetectionAlgorithm_fieldtrip(data,hdr, SleepScoring_vector, paramDetection)
 
 spindles=[];
 spindlesOutEnergy=[];
 spindlesOutDuration=[];
 
-SR=D.fsample;
+SR=hdr.Fs;
 
 if nargin<3
     paramDetection=[];
@@ -60,7 +60,7 @@ if isfield(paramDetection,'minMaxDurations_ms'),  minMaxDurations_ms=paramDetect
 if isfield(paramDetection,'minFreqValue'),        minFreqValue=paramDetection.minFreqValue;               else minFreqValue=11; end
 if isfield(paramDetection,'maxFreqValue'),        maxFreqValue=paramDetection.maxFreqValue;               else maxFreqValue=17; end
 if isfield(paramDetection,'PlotFlag'),            PlotFlag=paramDetection.PlotFlag;                       else PlotFlag=0; end
-if isfield(paramDetection,'ChannelSelection'),    ChannelSelection=paramDetection.ChannelSelection;       else ChannelSelection=match_str(D.chantype,'EEG')'; end
+if isfield(paramDetection,'ChannelSelection'),    ChannelSelection=paramDetection.ChannelSelection;       else ChannelSelection=(1:hdr.nChans); end
 if isfield(paramDetection,'NREMonlyForThr'),      NREMonlyForThr=paramDetection.NREMonlyForThr;           else NREMonlyForThr=1; end
 
 % S=[];
@@ -76,23 +76,24 @@ if isfield(paramDetection,'NREMonlyForThr'),      NREMonlyForThr=paramDetection.
 countChan=0;
 for nChan=ChannelSelection
     countChan=countChan+1;
-    fprintf('... detecting spindles on %s (%g/%g)',D.chanlabels{nChan},countChan,length(ChannelSelection))
-    EEGdata=squeeze(D(nChan,:,:));
+    fprintf('... detecting spindles on %s (%g/%g)',hdr.label{nChan},countChan,length(ChannelSelection))
+    EEGdata=squeeze(data(nChan,:));
     %% Filter the EEG within the spindle range
     EEGdata_BP_spindles=bandpass(EEGdata, SR, spindleBand(1), spindleBand(2), spindleBand(3));
     EEGdata_BP_broad=bandpass(EEGdata, SR, 0.1, 30, spindleBand(3));
-    EEGdata_BP_high=bandpass(EEGdata, SR, 60, 90, spindleBand(3));
+    EEGdata_BP_high=bandpass(EEGdata, SR, 40, 55, spindleBand(3));
     EEGdata_BP_alpha=bandpass(EEGdata, SR, 8, 10, spindleBand(3));
     %% Select only sleep segments
     if isempty(SleepScoring_vector)
         EpochsOfInterest=logical(ones(1,length(EEGdata)));
         SleepStages_ts=[];
     else
-        if length(SleepScoring_vector)~=size(D,2)
+        if length(SleepScoring_vector)~=size(data,2)
             error('Wrong size scoring');
         end
+        SleepStages_ts=SleepScoring_vector;
         if NREMonlyForThr
-            NREM23epochs = find( SleepStages_ts >= 0); % Here stages are coded as follows: Wake: 1, REM: 2, NREM1-3: 3:5
+            NREM23epochs = find( ismember(SleepStages_ts,[1 2 3])); % Here stages are coded as follows: Wake: 0, N1: 1, N2: 2, N3: 3, REM: 5
             EpochsOfInterest=NREM23epochs;
         else
             EpochsOfInterest=logical(ones(1,length(EEGdata)));
@@ -281,7 +282,7 @@ for nChan=ChannelSelection
         end
         
         % Candidate discarded: Out Because of  Duration
-        if ( (spindleDuration > minMaxDurations_ms(1)*SR) && (spindleDuration < minMaxDurations_ms(2)*SR) )
+        if ( (spindleDuration > minMaxDurations_ms(1)*SR/1000) && (spindleDuration < minMaxDurations_ms(2)*SR/1000) )
             these_spindles = [these_spindles ; currentSpindle];
         else
             these_spindlesOutDuration = [these_spindlesOutDuration ; currentSpindle];

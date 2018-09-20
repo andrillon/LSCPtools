@@ -1,6 +1,6 @@
 % For example
 % [upStateTimes, downStateTimes] = detect_SW_negative_withStage_segments_dealWithSAW_scalp_new('REC1M_EEG_BP.mat', 1000, 2000, 'stagingRevised.mat', 5);
-function [allWaves, slowWaves] = SWsDetectionAlgorithm_forSPM12(D, SleepScoring_filename, paramDetection)
+function [allWaves, slowWaves] = SWsDetectionAlgorithm_forSPM12(D, SleepScoring_vector, paramDetection)
 % (EEG_filename, original_fs, desiredPercentOfSlowWaves, stagingFile, SAW_threshold, onlyThisStage)
 % v2 version adapted for SPM12
 allWaves = [];
@@ -20,13 +20,14 @@ if isfield(paramDetection,'P2Pamp'),              P2Pamp=paramDetection.P2Pamp; 
 if length(SWband)==3
     S=[];
     S.D=D;
+    
     S.type='but';
     S.order=SWband(3);
     S.band='bandpass';
     S.freq=SWband;
     S.dir='twopass';
     S.save=0;
-    Dfilt=spm_eeg_filter(S);
+    Dfilt=spm_eeg_filter_mod(S);
 else
     S=[];
     S.D=D;
@@ -36,7 +37,7 @@ else
     S.freq=SWband(1);
     S.dir='twopass';
     S.save=0;
-    Dfilt=spm_eeg_filter(S);
+    Dfilt=spm_eeg_filter_mod(S);
 end
 fsample_ori=D.fsample;
 
@@ -46,7 +47,7 @@ S=[];
 S.D=Dfilt;
 S.fsample_new=100;
 S.save=0;
-Dres=spm_eeg_downsample(S);
+Dres=spm_eeg_downsample_mod(S);
 SR=Dres.fsample;
 
 countChan=0;
@@ -60,10 +61,13 @@ for nChan=ChannelSelection
     %     EEGdata_BP=bandpass(EEGdata, SR, SWband(1), SWband(2), SWband(3));
     
     % Include sleep stagin
-    if isempty(SleepScoring_filename)
+    if isempty(SleepScoring_vector)
         SleepStages_ts=nan(1,length(EEGdata_BP_ss));
     else
-        [SleepStages_ts arousal_sampled marousal_sampled]=format_sleepScoring(Dres,SleepScoring_filename);
+        if length(SleepScoring_vector)~=Dres.nsamples
+            error('Wrong size scoring');
+        end
+        SleepStages_ts=SleepScoring_vector;
     end
     
     %%%%%% Brady's code from here on
@@ -103,6 +107,8 @@ for nChan=ChannelSelection
         % In case a peak is not detected for this wave (happens rarely)
         if (size(negpeaks,1) == 0)
             waves(wndx, :) = NaN; %uvValueLine;
+            thisStage=SleepStages_ts(wavest);
+            waves(wndx,end) =thisStage;
             continue;
         end
         

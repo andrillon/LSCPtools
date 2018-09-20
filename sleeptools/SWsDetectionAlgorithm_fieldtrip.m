@@ -1,11 +1,11 @@
 % For example
 % [upStateTimes, downStateTimes] = detect_SW_negative_withStage_segments_dealWithSAW_scalp_new('REC1M_EEG_BP.mat', 1000, 2000, 'stagingRevised.mat', 5);
-function [allWaves, slowWaves] = SWsDetectionAlgorithm_forSPM12(D, SleepScoring_filename, paramDetection)
+function [allWaves, slowWaves] = SWsDetectionAlgorithm_fieldtrip(data, hdr, SleepScoring_vector, paramDetection)
 % (EEG_filename, original_fs, desiredPercentOfSlowWaves, stagingFile, SAW_threshold, onlyThisStage)
 % v2 version adapted for SPM12
 allWaves = [];
 slowWaves=[];
-SR=D.fsample;
+SR=hdr.Fs;
 
 if nargin<3
     paramDetection=[];
@@ -18,36 +18,24 @@ if isfield(paramDetection,'P2Pamp'),              P2Pamp=paramDetection.P2Pamp; 
 
 %% Filter EEG
 if length(SWband)==3
-    S=[];
-    S.D=D;
-    S.type='but';
-    S.order=SWband(3);
-    S.band='bandpass';
-    S.freq=SWband;
-    S.dir='twopass';
-    S.save=0;
-    Dfilt=spm_eeg_filter(S);
+    datfilt=nan(length(ChannelSelection),size(data,2));
+    for nch=ChannelSelection
+        datfilt(nch,:)=bandpass(data(nch,:),SR,SWband(1),SWband(2),SWband(3));
+    end
 else
-    S=[];
-    S.D=D;
-    S.type='but';
-    S.order=SWband(2);
-    S.band='lowpass';
-    S.freq=SWband(1);
-    S.dir='twopass';
-    S.save=0;
-    Dfilt=spm_eeg_filter(S);
+    datfilt=nan(length(ChannelSelection),size(data,2));
+    for nch=ChannelSelection
+        datfilt(nch,:)=lowpass(data(nch,:),SR,SWband(1),SWband(2));
+    end
 end
-fsample_ori=D.fsample;
+fsample_ori=hdr.Fs;
 
 %% Down sample to 100Hz
-fsample_new=100;
-S=[];
-S.D=Dfilt;
-S.fsample_new=100;
-S.save=0;
-Dres=spm_eeg_downsample(S);
-SR=Dres.fsample;
+SR_new=100;
+for nch=ChannelSelection
+    datres(nch,:)=resample(datfilt(nch,:),SR_new,SR);
+end
+
 
 countChan=0;
 if size(ChannelSelection,1)>size(ChannelSelection,2)
@@ -55,15 +43,18 @@ if size(ChannelSelection,1)>size(ChannelSelection,2)
 end
 for nChan=ChannelSelection
     countChan=countChan+1;
-    fprintf('... detecting SWs on %s (%g/%g)',Dres.chanlabels{nChan},countChan,length(ChannelSelection))
-    EEGdata_BP_ss=squeeze(Dres(nChan,:,:));
+    fprintf('... detecting SWs on %s (%g/%g)',hdr.label{nChan},countChan,length(ChannelSelection))
+    EEGdata_BP_ss=squeeze(datres(nChan,:));
     %     EEGdata_BP=bandpass(EEGdata, SR, SWband(1), SWband(2), SWband(3));
     
     % Include sleep stagin
-    if isempty(SleepScoring_filename)
+    if isempty(SleepScoring_vector)
         SleepStages_ts=nan(1,length(EEGdata_BP_ss));
     else
-        [SleepStages_ts arousal_sampled marousal_sampled]=format_sleepScoring(Dres,SleepScoring_filename);
+        if length(SleepScoring_vector)~=size(datres,2)
+            error('Wrong size scoring');
+        end
+        SleepStages_ts=SleepScoring_vector;
     end
     
     %%%%%% Brady's code from here on
@@ -103,6 +94,8 @@ for nChan=ChannelSelection
         % In case a peak is not detected for this wave (happens rarely)
         if (size(negpeaks,1) == 0)
             waves(wndx, :) = NaN; %uvValueLine;
+            thisStage=SleepStages_ts(wavest);
+            waves(wndx,end) =thisStage;
             continue;
         end
         
@@ -156,15 +149,15 @@ for nChan=ChannelSelection
         %22: determines maximal negative slope for 2nd segement
         %23: stage (if scored data)
         waves(wndx, :) = [wavest wavend mdpt poszx period/SR abs(b) bx c cx maxb2c n1 n1x nEnd nEndx p1 p1x meanAmp nump nperiod/SR p2p mxdn mxup thisStage];
-        waves(wndx, [1 2 3 4 7 9 12 14 16])=waves(wndx, [1 2 3 4 7 9 12 14 16])*(fsample_ori/fsample_new);
-
-    end 
+        waves(wndx, [1 2 3 4 7 9 12 14 16])=waves(wndx, [1 2 3 4 7 9 12 14 16])*(fsample_ori/SR_new);
+        
+    end
     allWaves{nChan} = waves;
- % of loop through segments
-
-slowWaves{nChan} = waves((waves(:, 19)<SWslope(2)) & (waves(:, 19)>SWslope(1)) & (waves(:,10)>P2Pamp), :); % choose slow waves based on their period
-fprintf('... %g SWs detected',size(slowWaves{nChan},1))
-fprintf('\n')
+    % of loop through segments
+    
+    slowWaves{nChan} = waves((waves(:, 19)<SWslope(2)) & (waves(:, 19)>SWslope(1)) & (waves(:,10)>P2Pamp), :); % choose slow waves based on their period
+    fprintf('... %g SWs detected',size(slowWaves{nChan},1))
+    fprintf('\n')
 end
 end
 
@@ -180,3 +173,26 @@ else
     smdata=data;
 end
 end
+
+function BP = bandpass(timecourse, SamplingRate, low_cut, high_cut, filterOrder)
+% BP = bandpass(timecourse, SamplingRate, low_cut, high_cut, filterOrder)
+
+if (nargin < 5)
+    filterOrder = 2;
+end
+
+[b, a] = butter(filterOrder, [(low_cut/SamplingRate)*2 (high_cut/SamplingRate)*2]);
+BP = filtfilt(b, a, timecourse );
+end
+
+function BP = lowpass(timecourse, SamplingRate, f_cut, filterOrder)
+% BP = bandpass(timecourse, SamplingRate, low_cut, high_cut, filterOrder)
+
+if (nargin < 5)
+    filterOrder = 2;
+end
+
+[b, a] = butter(filterOrder, [(f_cut/SamplingRate)*2],'low');
+BP = filtfilt(b, a, timecourse );
+end
+
