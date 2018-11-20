@@ -1,4 +1,4 @@
-function [d, c] = calc_dprime(Hit,FA)
+function [d, c] = calc_dprime2(Hit,FA)
 %[d] = calc_dprime(Hit,FA)
 
 % controle size

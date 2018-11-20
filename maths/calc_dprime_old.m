@@ -1,4 +1,4 @@
-function [d, c] = calc_dprime(Hit,FA)
+function [d, c] = calc_dprime_old(Hit,FA)
 %[d] = calc_dprime(Hit,FA)
 
 % controle size
@@ -18,17 +18,17 @@ FA(isnan(FA))=[];
 
 % control for Inf dprime
 if sum(Hit==1)==0,
-    Hit=[Hit 0.5];
+    Hit=[Hit 1];
 %     warning('correction for perfect performance');
 elseif sum(Hit==0)==0,
-    Hit=[Hit 0.5];
+    Hit=[Hit 0];
 %     warning('correction for perfect performance');
 end
 if sum(FA==1)==0,
-    FA=[FA 0.5];
+    FA=[FA 1];
 %     warning('correction for perfect performance');
 elseif sum(FA==0)==0,
-    FA=[FA 0.5];
+    FA=[FA 0];
 %     warning('correction for perfect performance');
 end
 

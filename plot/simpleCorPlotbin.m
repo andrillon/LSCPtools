@@ -38,13 +38,16 @@ line([1 1]*Xbin(1),[-1 1]*Ybin_sem(1)+Ybin(1),'Color',Prop{2},'LineWidth',2)
 scatter(Xbin(1),Ybin(1),'Marker',Prop{1},'SizeData',Prop{4},'MarkerFaceColor',Prop{3},'MarkerEdgeColor',Prop{2},'LineWidth',2)
 for nbin=2:length(bins)-2
     Ybin(nbin)=mean(Y(X>bins(nbin-1) & X<=bins(nbin)));
-    Ybin_sem(nbin)=sem(Y(X>bins(nbin-1) & X<=bins(nbin)));
+    Ybin_sem(nbin)=real(sem(Y(X>bins(nbin-1) & X<=bins(nbin))));
     Xbin(nbin)=mean(X(X>bins(nbin-1) & X<=bins(nbin)));
-    Xbin_sem(nbin)=sem(X(X>bins(nbin-1) & X<=bins(nbin)));
+    Xbin_sem(nbin)=real(sem(X(X>bins(nbin-1) & X<=bins(nbin))));
     
     line([1 1]*Xbin(nbin),[-1 1]*Ybin_sem(nbin)+Ybin(nbin),'Color',Prop{2},'LineWidth',2)
     line([-1 1]*Xbin_sem(nbin)+Xbin(nbin),[1 1]*Ybin(nbin),'Color',Prop{2},'LineWidth',2)
     scatter(Xbin(nbin),Ybin(nbin),'Marker',Prop{1},'SizeData',Prop{4},'MarkerFaceColor',Prop{3},'MarkerEdgeColor',Prop{2},'LineWidth',2)
+end
+if isempty(nbin)
+    nbin=1;
 end
 nbin=nbin+1;
 Ybin(nbin)=mean(Y(X>bins(nbin-1) & X<=Inf));

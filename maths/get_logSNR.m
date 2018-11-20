@@ -23,6 +23,34 @@ if strcmp(param.method,'fft')
     logpow=nan(size(data,1),numfreq,size(data,3));
     logSNR=nan(size(data,1),numfreq,size(data,3));
 end
+if strcmp(param.method,'welch')
+    if ~isfield(param,'w_window')
+        w_window=length(signal);
+    else
+        w_window=param.w_window;
+    end
+    if ~isfield(param,'w_overlap')
+        w_overlap=0;
+    else
+        w_overlap=param.w_overlap;
+    end
+    if ~isfield(param,'w_df')
+        df=[];
+        freqV=[];
+    else
+        df=param.w_df;
+        freqV=df:df:SR/2;
+    end
+    
+    signal=squeeze(data(1,:,1));
+    [pow,faxis] = pwelch(signal,w_window,w_overlap,freqV,SR,'power');
+    if isempty(df)
+        df=faxis(2)-faxis(1);
+    end
+     % pre-allocation for WELCH
+    logpow=nan(size(data,1),length(pow),size(data,3));
+    logSNR=nan(size(data,1),length(pow),size(data,3));
+end
 for nCh=1:size(data,1)
     for nTr=1:size(data,3)
         
@@ -36,6 +64,11 @@ for nCh=1:size(data,1)
             % define df and fNQ
             fNQ = SR/2;
             faxis = (0:df:fNQ);
+        elseif strcmp(param.method,'welch')
+            %%%% Apply WELCH
+            % get power
+    [pow,faxis] = pwelch(signal,w_window,w_overlap,freqV,SR,'power');
+          
         elseif strcmp(param.method,'taper')
             % Apply taper methods (Chronux toolbox)
             T=size(data,2)/SR;

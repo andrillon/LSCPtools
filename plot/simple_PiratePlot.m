@@ -1,4 +1,4 @@
-function handles = simple_PiratePlot(X,Y,width,smoothingFactor,cutEdges,pcolor,spread,limits,plotSEM,scatterargs)
+function handles = simple_PiratePlot(X,Y,width,smoothingFactor,cutEdges,pcolor,spread,limits,scatterargs)
 % Trace one or several custom Pirate Plot. Circles represent individual
 % data, middle bar the mean of the distribution, shaded area the mean +/-
 % the standard error of the mean (corrected for small samples; This is not
@@ -120,14 +120,16 @@ for iP = 1:numel(X)
     darkcolor(darkcolor<0) = 0;
     brightcolor = ccolor+[0.35,0.35,0.35];
     brightcolor(brightcolor>1) = 1;
-
+    
     divisions = 10;
-
+    
     binsize = iqr(yplot)/(sum(~isnan(yplot)).^(1/3))/2;
-
+    if binsize==0
+        binsize=0.02;
+    end
     totbin = ceil((nanmax(yplot)-nanmin(yplot))/binsize);
     totbin = totbin*2;
-
+    
     allbins = (nanmedian(yplot)-totbin*binsize/2)+(0:totbin)*binsize;
     freqs = histc(yplot,allbins);
     freqs = freqs(1:(end-1))/numel(yplot);
@@ -181,8 +183,8 @@ for iP = 1:numel(X)
     end
 
     [~,Ind] = nanmin(abs(allpoints-nanmean(yplot)));
-    [~,Ind2] = nanmin(abs(allpoints-nanmedian(yplot)));
-    SEMsize = tinv(0.975,sum(~isnan(yplot))-1)*(nanstd(yplot)/sqrt(sum(~isnan(yplot))-1));
+%     SEMsize = tinv(0.975,sum(~isnan(yplot))-1)*(nanstd(yplot)/sqrt(sum(~isnan(yplot))-1));
+    SEMsize = nanstd(yplot)/sqrt(sum(~isnan(yplot))-1);
     firstI = find(diff((nanmean(yplot)-SEMsize)>allpoints)~=0);
     if isempty(firstI)
         firstI=1;
@@ -195,14 +197,9 @@ for iP = 1:numel(X)
     lastP = ((nanmean(yplot)+SEMsize)-allpoints(lastI))/(allpoints(lastI+1)-allpoints(lastI))*(xx(lastI+1)-xx(lastI))+xx(lastI);
     SEMxplotspan = [firstP,xx((firstI+1):lastI),lastP];
     SEMyplotspan = [nanmean(yplot)-SEMsize,allpoints((firstI+1):lastI),nanmean(yplot)+SEMsize];
-    if plotSEM
-    handles(end-2) = fill(xplot+[-SEMxplotspan,fliplr(SEMxplotspan)],[SEMyplotspan,fliplr(SEMyplotspan)],brightcolor,'edgecolor','none');
-    end
-    handles(end-1) = plot(xplot+[-xx(Ind),xx(Ind)],[nanmean(yplot),nanmean(yplot)],'color',darkcolor,'linewidth',2);
-    handles(end-1) = plot(xplot+[-xx(Ind2),xx(Ind2)],[nanmedian(yplot),nanmedian(yplot)],'color',darkcolor,'linewidth',2,'linestyle',':');
-
     
-    if strcmpi(spread,'y')
+       handles(end-2) = fill(xplot+[-SEMxplotspan,fliplr(SEMxplotspan)],[SEMyplotspan,fliplr(SEMyplotspan)],brightcolor,'edgecolor','none');
+ if strcmpi(spread,'y')
         
         [yplot,Iyy] = sort(yplot);
 
@@ -242,5 +239,8 @@ for iP = 1:numel(X)
             set(handles(end),scatterargs{:});
         end
     end
+    handles(end-1) = plot(xplot+[-xx(Ind),xx(Ind)],[nanmean(yplot),nanmean(yplot)],'color',darkcolor,'linewidth',1);
+
 end
+
 

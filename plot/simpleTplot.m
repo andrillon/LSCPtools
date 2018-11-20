@@ -117,14 +117,14 @@ if ~iscell(y)
                 for nC=1:realpos{1}.nclusters
                     if realpos{1}.pmonte(nC)<statsF(2)
                         hold on;
-                        plot(x(find(realpos{1}.clusters==nC)),1.1*max(mean(y)+std(y)/sqrt(size(y,1)-1))*ones(1,length(find(realpos{1}.clusters==nC))),'Color',colorF,'LineWidth',lineWidth-1,'LineStyle',lineF)
+                        plot(x(find(realpos{1}.clusters==nC)),1.1*max(mean(y)+std(y)/sqrt(size(y,1)-1))*ones(1,length(find(realpos{1}.clusters==nC))),'Color',colorF,'LineWidth',max(1,lineWidth-1),'LineStyle',lineF)
                     end
                 end
                 % plot negative cluster
                 for nC=1:realneg{1}.nclusters
                     if realneg{1}.pmonte(nC)<statsF(2)
                         hold on;
-                        plot(x(find(realneg{1}.clusters==nC)),1.1*min(mean(y)-std(y)/sqrt(size(y,1)-1))*ones(1,length(find(realneg{1}.clusters==nC))),'Color',colorF,'LineWidth',lineWidth-1,'LineStyle',lineF)
+                        plot(x(find(realneg{1}.clusters==nC)),1.1*min(mean(y)-std(y)/sqrt(size(y,1)-1))*ones(1,length(find(realneg{1}.clusters==nC))),'Color',colorF,'LineWidth',max(1,lineWidth-1),'LineStyle',lineF)
                     end
                 end
             elseif statsF(1)==3
