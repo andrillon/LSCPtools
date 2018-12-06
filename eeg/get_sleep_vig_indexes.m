@@ -20,7 +20,7 @@ end
 % Compute FFT
 pow = (abs(fft(data)).^2)/length(data);
 % % convert to decibels
-pow = 10*log10(pow);
+% pow = 10*log10(pow);
 % first half of data without negative frequencies
 pow = pow(1:min(floor(length(data)/2)+1,length(data)));
 % define df and fNQ
