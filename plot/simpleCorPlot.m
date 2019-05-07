@@ -66,7 +66,17 @@ if ~isempty(corType)
             fprintf('... ... could not fit\n')
         end
     elseif strcmp(corType,'pearson_nofit')
-          [rho pV]=corr(X,Y,'type','pearson','rows','pairwise');
+        [rho pV]=corr(X,Y,'type','pearson','rows','pairwise');
+        stats=[rho pV];
+        
+        if newF
+            title(sprintf('%s correlation: rho=%g p=%1.3f',corType,rho,pV))
+        else
+            title(sprintf('%s: r=%1.2f p=%1.3f',corType,rho,pV))
+            fprintf('%s correlation: r=%1.2f p=%1.3f\n',corType,rho,pV)
+        end
+    elseif strcmp(corType,'spearman_nofit')
+        [rho pV]=corr(X,Y,'type','spearman','rows','pairwise');
         stats=[rho pV];
         
         if newF
@@ -80,10 +90,10 @@ if ~isempty(corType)
         stats=[rho pV];
         
         if pV<0.1
-           [b,rstats] = robustfit(X,Y);
+            [b,rstats] = robustfit(X,Y);
             plot(xlim,b(1)+b(2)*xlim,'Color',Prop{3},'LineStyle','--','LineWidth',3);
         else
-             [b,rstats] = robustfit(X,Y);
+            [b,rstats] = robustfit(X,Y);
             plot(xlim,b(1)+b(2)*xlim,'Color',Prop{3},'LineStyle',':','LineWidth',3);
         end
         %    lin=linspace(min(X),max(X));

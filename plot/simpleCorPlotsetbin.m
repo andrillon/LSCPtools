@@ -3,7 +3,7 @@ function [rhopop, pVpop]=simpleCorPlotsetbin(X,Y,setbins,Prop,corType,newF,lineF
 
 rho=[]; pV=[];
 if nargin<4 || isempty(Prop)
-    Prop={'o','b','b',72,16};
+    Prop={'o','b','b',72,3};
 end
 if nargin<5
     corType='pearson';
@@ -41,8 +41,8 @@ if size(setbins,1)==1
         Xbin(nbin)=mean(X(X==bins(nbin)));
         Xbin_sem(nbin)=real(sem(X(X==bins(nbin))));
         
-        line([1 1]*Xbin(nbin),[-1 1]*Ybin_sem(nbin)+Ybin(nbin),'Color',Prop{2},'LineWidth',2)
-        line([-1 1]*Xbin_sem(nbin)+Xbin(nbin),[1 1]*Ybin(nbin),'Color',Prop{2},'LineWidth',2)
+        line([1 1]*Xbin(nbin),[-1 1]*Ybin_sem(nbin)+Ybin(nbin),'Color',Prop{2},'LineWidth',Prop{5})
+        line([-1 1]*Xbin_sem(nbin)+Xbin(nbin),[1 1]*Ybin(nbin),'Color',Prop{2},'LineWidth',Prop{5})
         scatter(Xbin(nbin),Ybin(nbin),'Marker',Prop{1},'SizeData',Prop{4},'MarkerFaceColor',Prop{3},'MarkerEdgeColor',Prop{2},'LineWidth',2)
     end
 else
@@ -56,8 +56,8 @@ else
         Xbin(nbin)=mean(X(X>=bins(1,nbin) & X<bins(2,nbin)));
         Xbin_sem(nbin)=real(sem(X(X>=bins(1,nbin) & X<bins(2,nbin))));
         
-        line([1 1]*(Xbin(nbin)),[-1 1]*Ybin_sem(nbin)+Ybin(nbin),'Color',Prop{2},'LineWidth',2)
-        line([-1 1]*Xbin_sem(nbin)+(Xbin(nbin)),[1 1]*Ybin(nbin),'Color',Prop{2},'LineWidth',2)
+        line([1 1]*(Xbin(nbin)),[-1 1]*Ybin_sem(nbin)+Ybin(nbin),'Color',Prop{2},'LineWidth',Prop{5})
+        line([-1 1]*Xbin_sem(nbin)+(Xbin(nbin)),[1 1]*Ybin(nbin),'Color',Prop{2},'LineWidth',Prop{5})
         scatter((Xbin(nbin)),Ybin(nbin),'Marker',Prop{1},'SizeData',Prop{4},'MarkerFaceColor',Prop{3},'MarkerEdgeColor',Prop{2},'LineWidth',2)
     end
 end

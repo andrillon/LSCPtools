@@ -78,7 +78,7 @@ if ~iscell(y)
         else
             hold on;
             
-            y(sum(isnan(y),2)~=0,:)=[];
+%             y(sum(isnan(y),2)~=0,:)=[];
             yo=y;
             if sthFlag~=0
                 for n=1:size(y,1)
@@ -86,16 +86,19 @@ if ~iscell(y)
                 end
             end
             if jbFlag
-                jbfill(x,mean(y)+std(y)/sqrt(size(y,1)-1),mean(y)-std(y)/sqrt(size(y,1)-1),colorF,colorF,1,transpF);
+                nonnan=sum(~isnan(y),1);
+                jbfill(x,nanmean(y)+nanstd(y)./sqrt(nonnan-1),nanmean(y)-nanstd(y)./sqrt(nonnan-1),colorF,colorF,1,transpF);
                 hold on;
-                hplot=plot(x,mean(y),'LineWidth',4,'Color',colorF,'LineStyle',lineF);
+                hplot=plot(x,nanmean(y),'LineWidth',4,'Color',colorF,'LineStyle',lineF);
             else
                 if errFlag==1
-                    hplot=plot(x,mean(y),'LineWidth',lineWidth+1,'Color',colorF,'LineStyle',lineF); hold on;
-                    plot(x,mean(y)+std(y)/sqrt(size(y,1)-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
-                    plot(x,mean(y)-std(y)/sqrt(size(y,1)-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
+                    hplot=plot(x,nanmean(y),'LineWidth',lineWidth+1,'Color',colorF,'LineStyle',lineF); hold on;
+                    nonnan=sum(~isnan(y),1);
+                    plot(x,nanmean(y)+nanstd(y)./sqrt(nonnan-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
+                    plot(x,nanmean(y)-nanstd(y)./sqrt(nonnan-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
                 elseif errFlag==2
-                    errorbar(x,mean(y),mean(y)+std(y)/sqrt(size(y,1)-1),mean(y)-std(y)/sqrt(size(y,1)-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle',lineF);
+                    nonnan=sum(~isnan(y),1);
+                    errorbar(x,nanmean(y),nanmean(y)+nanstd(y)./sqrt(nonnan-1),nanmean(y)-nanstd(y)./sqrt(nonnan-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle',lineF);
                 else
                     hplot=plot(x,mean(y),'LineWidth',lineWidth+1,'Color',colorF,'LineStyle',lineF); hold on;
                 end

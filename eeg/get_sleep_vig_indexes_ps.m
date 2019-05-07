@@ -1,4 +1,4 @@
-function [alpha_theta,vig_index,W_index,NREM_index,REM_index, powbyband]=get_sleep_vig_indexes(data,Fs,param)
+function [alpha_theta,vig_index,W_index,NREM_index,REM_index, powbyband]=get_sleep_vig_indexes_ps(pow,faxis,param)
 
 % Set parameters
 if ~isfield(param,'delta_band')
@@ -16,25 +16,7 @@ end
 if ~isfield(param,'beta_band')
     param.beta_band=[20 40];
 end
-if ~isfield(param,'method')
-    param.method='fft';
-end
-if strcmp(param.method,'fft')
-    % Compute FFT
-    pow = (abs(fft(data)).^2)/length(data);
-    % % convert to decibels
-    % pow = 10*log10(pow);
-    % first half of data without negative frequencies
-    pow = pow(1:min(floor(length(data)/2)+1,length(data)));
-    % define df and fNQ
-    df = 1/(length(data)/Fs);
-    fNQ = Fs/2;
-    faxis = (0:df:fNQ);
-else
-    [pow, faxis] = pwelch(data, Fs, [], [], Fs);
-    pow=pow';
-    faxis=faxis';
-end
+
 if isfield(param,'StopFreqs')
     StopFreqs=param.StopFreqs;
     StopFreqsIdx=[];
