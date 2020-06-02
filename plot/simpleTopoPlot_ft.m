@@ -4,8 +4,8 @@ function simpleTopoPlot_ft(data, layoutFileName,labelsFlag,cmap,newF,contourF)
 if nargin<3
     labelsFlag='off';
 end
-if nargin<4
-    cmap='jet';
+if nargin<4 || isempty(cmap)
+    cmap='parula';
 end
 if nargin<6
     contourF=1;

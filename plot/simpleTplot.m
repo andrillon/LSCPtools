@@ -86,19 +86,19 @@ if ~iscell(y)
                 end
             end
             if jbFlag
-                nonnan=sum(~isnan(y),1);
-                jbfill(x,nanmean(y)+nanstd(y)./sqrt(nonnan-1),nanmean(y)-nanstd(y)./sqrt(nonnan-1),colorF,colorF,1,transpF);
+                    nonnan=(sum(~isnan(y),1));
+                jbfill(x,real(nanmean(y)+nanstd(y)./sqrt(nonnan-1)),real(nanmean(y)-nanstd(y)./sqrt(nonnan-1)),colorF,colorF,1,transpF);
                 hold on;
                 hplot=plot(x,nanmean(y),'LineWidth',4,'Color',colorF,'LineStyle',lineF);
             else
                 if errFlag==1
                     hplot=plot(x,nanmean(y),'LineWidth',lineWidth+1,'Color',colorF,'LineStyle',lineF); hold on;
-                    nonnan=sum(~isnan(y),1);
-                    plot(x,nanmean(y)+nanstd(y)./sqrt(nonnan-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
-                    plot(x,nanmean(y)-nanstd(y)./sqrt(nonnan-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
+                    nonnan=unique(sum(~isnan(y),1));
+                    plot(x,real(nanmean(y)+nanstd(y)./sqrt(nonnan-1)),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
+                    plot(x,real(nanmean(y)-nanstd(y)./sqrt(nonnan-1)),'LineWidth',lineWidth,'Color',colorF,'LineStyle','--');
                 elseif errFlag==2
-                    nonnan=sum(~isnan(y),1);
-                    errorbar(x,nanmean(y),nanmean(y)+nanstd(y)./sqrt(nonnan-1),nanmean(y)-nanstd(y)./sqrt(nonnan-1),'LineWidth',lineWidth,'Color',colorF,'LineStyle',lineF);
+                    nonnan=unique(sum(~isnan(y),1));
+                    errorbar(x,nanmean(y),real(nanmean(y)+nanstd(y)./sqrt(nonnan-1)),real(nanmean(y)-nanstd(y)./sqrt(nonnan-1)),'LineWidth',lineWidth,'Color',colorF,'LineStyle',lineF);
                 else
                     hplot=plot(x,mean(y),'LineWidth',lineWidth+1,'Color',colorF,'LineStyle',lineF); hold on;
                 end

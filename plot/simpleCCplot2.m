@@ -28,8 +28,9 @@ for i=1:length(ChanLabels)
         
         x = [xbeg xend]';
         y = [ybeg yend]';
+        if ~isnan(MatCCnorm(i,j))
         line(x, y,'Color', cmap(MatCCnorm(i,j),:));
-        
+        end
     end
 end
 axis('equal')

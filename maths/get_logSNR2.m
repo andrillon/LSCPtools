@@ -1,4 +1,4 @@
-function [logSNR, faxis, logpow]=get_logSNR(data,SR,param)
+function [logSNR, faxis, logpow]=get_logSNR2(data,SR,param)
 % Function that extracts the logSNR of the data (frequency tagging
 % experiments)
 %

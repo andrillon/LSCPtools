@@ -1,12 +1,13 @@
-function [stats hdl]=simpleCorPlot(X,Y,Prop,corType,newF)
+function [stats, hdl]=simpleCorPlot(X,Y,Prop,corType,newF)
 % [rho pV hdl]=simpleCorPlot(X,Y,Prop,corType,newF)
 
+stats=[];
 rho=[]; pV=[];
 if nargin<3 || isempty(Prop)
     Prop={'o','b','b',72};
 end
 if nargin<4
-    corType=[];
+    corType='Pearson';
 end
 if nargin<5
     newF=0;
@@ -94,7 +95,7 @@ if ~isempty(corType)
             plot(xlim,b(1)+b(2)*xlim,'Color',Prop{3},'LineStyle','--','LineWidth',3);
         else
             [b,rstats] = robustfit(X,Y);
-            plot(xlim,b(1)+b(2)*xlim,'Color',Prop{3},'LineStyle',':','LineWidth',3);
+            plot(xlim,b(1)+b(2)*xlim,'Color',Prop{3},'LineStyle','--','LineWidth',3);
         end
         %    lin=linspace(min(X),max(X));
         %    hold on

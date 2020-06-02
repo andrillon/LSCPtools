@@ -1,4 +1,4 @@
-function [stat] = compute_Topo_clusterPerm(dat1,dat2,time,chanlabels,fsample,clusteralpha,mc_alpha,nperm,layout,layoutName)
+function [stat] = compute_Topo_clusterPerm_v2(dat1,dat2,time,chanlabels,fsample,clusteralpha,mc_alpha,nperm,layout,layoutName)
 
 %%% PREPARE DATA
 % cfg=[];

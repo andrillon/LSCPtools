@@ -30,6 +30,9 @@ hold on;
 if sigFlag{1}==1
     hbar=bar(Pos,nanmean(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
     line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+    line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+    
     if length(data)==length(sigFlag{2}) || length(sigFlag{2})==1
         [h, pV, ~, stats]=ttest(data,sigFlag{2});
         fprintf('... paired t-test p=%1.5f (t(%g)=%2.3f)\n',pV,stats.df,stats.tstat);
@@ -47,6 +50,9 @@ if sigFlag{1}==1
 elseif sigFlag{1}==2
     hbar=bar(Pos,nanmean(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
     line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+     line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+   
     if length(data)==length(sigFlag{2}) || length(sigFlag{2})==1
         [pV h]=signrank(data,sigFlag{2});
         fprintf('... paired u-test p=%1.5f\n',pV);
@@ -72,14 +78,30 @@ elseif sigFlag{1}==0 && length(sigFlag)==3
     hbar=bar(Pos,nanmean(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
     if widthLine>1
         line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        
     else
         line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError)
+        
     end
+elseif sigFlag{1}==4
+    hbar=bar(Pos,nanmedian(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
+    line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError)
+    
 else
     hbar=bar(Pos,nanmean(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
     if widthLine>1
         line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+        
     else
         line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError)
+        
     end
 end
