@@ -1,10 +1,26 @@
 function [closestvalue,index]=findclosest(vec,value)
 
-vecdiff=vec-value;
-index=find(abs(vecdiff)==min(abs(vecdiff)));
-if isempty(index)
-    closestvalue=[];
+if length(value)==1
+    vecdiff=vec-value;
+    index0=find(abs(vecdiff)==min(abs(vecdiff)));
+    if isempty(index0)
+        closestvalue=[];
+        index=[];
+    else
+        index=index0(1);
+        closestvalue=vec(index0(1));
+    end
+    
 else
-    index=index(1);
-    closestvalue=vec(index(1));
+    for k=1:length(value)
+        vecdiff=vec-value(k);
+        index0=find(abs(vecdiff)==min(abs(vecdiff)));
+        if isempty(index0)
+            closestvalue(k)=NaN;
+            index(k)=NaN;
+        else
+            index(k)=index0(1);
+            closestvalue(k)=vec(index0(1));
+        end
+    end
 end

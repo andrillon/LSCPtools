@@ -85,7 +85,7 @@ if ~iscell(y)
                     y(n,:)=fastsmooth(y(n,:),sthFlag,3,1);
                 end
             end
-            if jbFlag
+            if jbFlag && (isempty(errFlag) || errFlag~=0)
                     nonnan=(sum(~isnan(y),1));
                 jbfill(x,real(nanmean(y)+nanstd(y)./sqrt(nonnan-1)),real(nanmean(y)-nanstd(y)./sqrt(nonnan-1)),colorF,colorF,1,transpF);
                 hold on;

@@ -32,8 +32,10 @@ cfg.gridscale=256;
 cfg.interpolation='v4';
 if contourF==1
     cfg.style='both';
-else
+elseif contourF==1
     cfg.style='straight';
+elseif contourF==2
+    cfg.style='contour';
 end
 dat=[];
 dat.avg=data;
