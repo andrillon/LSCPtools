@@ -31,13 +31,13 @@ if ~isempty(StimTrain)
     TrainRespLag = LagGeneratorNew(TrainResp,Lag);
     if ~isempty(TestResp)
     end
-    disp('finding RR...');
+%     disp('finding RR...');
     RR = TrainRespLag'*TrainRespLag;
-    disp('finding RS...');
+%     disp('finding RS...');
     for cnt1 = 1:size(StimTrain,3)
         RS(:,:,cnt1) = StimTrain(:,:,cnt1)*TrainRespLag;
     end
-    disp('finding g...');
+%     disp('finding g...');
     %
     %
     [u,s,v] = svd(RR);
@@ -58,7 +58,7 @@ if ~isempty(StimTrain)
     %
     %     g = pinv(RR)*RS';
     %         g = RS' \ RR;
-    disp('done...');
+%     disp('done...');
 end
 if ~isempty(TestResp)
     TestResp(isnan(TestResp))=0;

@@ -79,4 +79,25 @@ else
             end
         end
     end
+    old_blinks=blinks;
+    blinks=[];
+    if param.paired==0
+        for neye=1:2
+            temp_blinks=old_blinks(old_blinks(:,end)==neye,:);
+            dist_blinks=temp_blinks(2:end,2)-temp_blinks(1:end-1,3);
+            c=1;
+            co=0;
+            while c<length(dist_blinks)
+                if dist_blinks(c)<param.mindist*param.fs
+                    temp_blinks(c,:)=[temp_blinks(c,1:2) temp_blinks(c+1,3) temp_blinks(c+1,3)-temp_blinks(c,2) (temp_blinks(c+1,3)-temp_blinks(c,2))/param.fs temp_blinks(c,end)];
+                    temp_blinks(c+1,:)=[];
+                    dist_blinks=temp_blinks(2:end,2)-temp_blinks(1:end-1,3);
+                    co=co+1;
+                else
+                    c=c+1;
+                end
+            end
+            blinks=[blinks ; temp_blinks];
+        end
+    end
 end

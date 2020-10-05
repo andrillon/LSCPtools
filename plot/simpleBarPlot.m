@@ -48,10 +48,10 @@ if sigFlag{1}==1
         end
     end
 elseif sigFlag{1}==2
-    hbar=bar(Pos,nanmean(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
-    line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
-     line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
-        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError)
+    hbar=bar(Pos,nanmedian(data),'BarWidth',widthBar,'FaceColor',colorBar(1,:),'EdgeColor',colorBar(2,:),'LineWidth',widthLine);
+    line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError)
+     line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError)
    
     if length(data)==length(sigFlag{2}) || length(sigFlag{2})==1
         [pV h]=signrank(data,sigFlag{2});
@@ -61,7 +61,7 @@ elseif sigFlag{1}==2
         fprintf('... non-paired u-test p=%1.5f\n',pV);
     end
     if pV<sigFlag{3}
-        if nanmean(data)>0
+        if nanmedian(data)>0
             plot(Pos,1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
         else
             plot(Pos,-1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
