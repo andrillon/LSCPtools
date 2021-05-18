@@ -71,3 +71,7 @@ else
     xlim([0.8*min(Xbin) 1.2*max(Xbin)])
 end
 ylim([min(-1.2*abs(Ybin_sem)+Ybin) max(1.2*abs(Ybin_sem)+Ybin)])
+
+%%
+
+

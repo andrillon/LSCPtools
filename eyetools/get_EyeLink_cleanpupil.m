@@ -13,7 +13,8 @@ for nbl=1:length(blinks.start)
     if startB-0.2*SR<1 || endB+0.2*SR>length(data_pupil)
         continue;
     end
-    temp_interpolate=[mode(data_pupil(startB-0.2*SR:startB-0.1*SR)) ; mode(data_pupil(endB+0.1*SR:endB+0.2*SR))];
+%     temp_interpolate=[mode(data_pupil(startB-0.2*SR:startB-0.1*SR)) ; mode(data_pupil(endB+0.1*SR:endB+0.2*SR))];
+    temp_interpolate=[data_pupil(startB-0.1*SR) ; data_pupil(endB+0.1*SR)];
     if sum(~isreal(temp_interpolate))~=0
         continue;
     end

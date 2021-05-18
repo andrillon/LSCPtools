@@ -39,28 +39,33 @@ if isempty(sizeDot)
     sizeDot=36;
 end
 hold on;
-if spreadFlag
-    xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos;
-    hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorBar(2,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4);
-end
 if boxFlag
-   line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*prctile(data,25),'Color',colorBar(1,:),'LineWidth',widthLine)
-   line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*prctile(data,75),'Color',colorBar(1,:),'LineWidth',widthLine)
-   line([Pos-0.1*widthBar Pos-0.1*widthBar],[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
-   line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*nanmean(data),'Color',colorBar(1,:),'LineWidth',widthLine+1)
-   line([Pos+0.1*widthBar Pos+0.1*widthBar],[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
-   
-   patch([Pos-0.1*widthBar Pos+0.1*widthBar Pos+0.1*widthBar Pos-0.1*widthBar Pos-0.1*widthBar]',...
-       [prctile(data,25) prctile(data,25) prctile(data,75) prctile(data,75) prctile(data,25)]',colorBar(1,:),'FaceAlpha',0.5,'EdgeColor','none');
-%    minBoxPlot=prctile(data,25)-1.5*(prctile(data,75)-prctile(data,25));
-%    maxBoxPlot=prctile(data,75)+1.5*(prctile(data,75)-prctile(data,25));
-%    line([1 1]*Pos,[minBoxPlot prctile(data,25)],'Color',colorBar(1,:),'LineWidth',widthLine-1)
-%    line([1 1]*Pos,[prctile(data,75) maxBoxPlot],'Color',colorBar(1,:),'LineWidth',widthLine-1)
-%    
-%    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*minBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
-%    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*maxBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
-   
+    line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*prctile(data,25),'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*prctile(data,75),'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos-0.1*widthBar],[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*nanmean(data),'Color',colorBar(1,:),'LineWidth',widthLine+1)
+    line([Pos+0.1*widthBar Pos+0.1*widthBar],[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
+    
+    patch([Pos-0.1*widthBar Pos+0.1*widthBar Pos+0.1*widthBar Pos-0.1*widthBar Pos-0.1*widthBar]',...
+        [prctile(data,25) prctile(data,25) prctile(data,75) prctile(data,75) prctile(data,25)]',colorBar(1,:),'FaceAlpha',0.5,'EdgeColor','none');
+    %    minBoxPlot=prctile(data,25)-1.5*(prctile(data,75)-prctile(data,25));
+    %    maxBoxPlot=prctile(data,75)+1.5*(prctile(data,75)-prctile(data,25));
+    %    line([1 1]*Pos,[minBoxPlot prctile(data,25)],'Color',colorBar(1,:),'LineWidth',widthLine-1)
+    %    line([1 1]*Pos,[prctile(data,75) maxBoxPlot],'Color',colorBar(1,:),'LineWidth',widthLine-1)
+    %
+    %    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*minBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
+    %    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*maxBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
+    if spreadFlag
+        xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos;
+        hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorBar(2,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4);
+    end
+    
 else
+    if spreadFlag
+        xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos;
+        hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorBar(2,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4);
+    end
+    
     if sigFlag{1}==1
         
         hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
