@@ -44,7 +44,11 @@ cfg.numrandomization = nperm;
 
 cfg_neighb=[];
 cfg_neighb.method = 'tri';
+if nargin<10
+cfg_neighb.layout=layout;
+else
 cfg_neighb.layout=layoutName;
+end
 % cfg_neighb.neighbourdist = 0; % for EGI 65, change to 0. For other nets: check distance
 neighbours = ft_prepare_neighbours(cfg_neighb, data_cond1);
 cfg.neighbours       = neighbours;
