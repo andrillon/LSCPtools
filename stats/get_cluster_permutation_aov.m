@@ -1,4 +1,4 @@
-function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalpha,clusteralpha,npermutation,sTime)
+function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalpha,clusteralpha,npermutation,sTime,model)
 
 % Input
 % - data: cell array (1 cell per condition:  channels * times * subjects
@@ -7,6 +7,10 @@ function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalph
 % - npermutation
 % - sTime
 % - averageelecFlag
+
+if nargin<7
+    model='full';
+end
 
 %% Bootstrap
 % fprintf('Calculating permutations...');
@@ -18,6 +22,12 @@ if size(group,2)==1
     nsuj=size(data,1);
     df1=length(unique(group))-1;
     df2=nsuj-1;
+    
+    all_perms=nan(nsuj,npermutation);
+    for nperm=1:npermutation
+        all_perms(:,nperm)=randperm(size(data,1));
+    end
+
     %
     % bdata = zeros(nsuj, ntime, npermutation);
     % %     tic;
@@ -41,7 +51,7 @@ if size(group,2)==1
         rd(nt) = TAB{2,5};
         
         for nperm=1:npermutation
-            pdm = data(randperm(size(data,1)),:);
+            pdm = data(all_perms(:,nperm),:);
             [~,TAB,~] = anova1(pdm(:,nt), group,'off');
             pd(nperm,nt) = TAB{2,5};
         end
@@ -86,21 +96,21 @@ if size(group,2)==1
     end
     
     
-    fprintf('\n');
-    
-    pmonte = realneg.pmonte;
-    goodc = find(pmonte < montecarloalpha);
-    contrast = linspace(.5, 1, length(goodc));
-    for i = 1:length(goodc)
-        ic = goodc(i);
-        samples = realneg.clusters == ic;
-        cint = [min(sTime(samples)) max(sTime(samples))];
-        [peakv,peaki] = min(rd(samples));
-        cintsamples = find(samples);
-        peakt = sTime(cintsamples(peaki));
-        fprintf('\t neg | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f]; ... \n', pmonte(ic), cint, peakt);
-        
-    end
+%     fprintf('\n');
+%     
+%     pmonte = realneg.pmonte;
+%     goodc = find(pmonte < montecarloalpha);
+%     contrast = linspace(.5, 1, length(goodc));
+%     for i = 1:length(goodc)
+%         ic = goodc(i);
+%         samples = realneg.clusters == ic;
+%         cint = [min(sTime(samples)) max(sTime(samples))];
+%         [peakv,peaki] = min(rd(samples));
+%         cintsamples = find(samples);
+%         peakt = sTime(cintsamples(peaki));
+%         fprintf('\t neg | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f]; ... \n', pmonte(ic), cint, peakt);
+%         
+%     end
     
     fprintf('\n')
     
@@ -110,27 +120,45 @@ else
     nsuj=size(data,1);
     df1=length(unique(group))-1;
     df2=nsuj-1;
-    
+    all_perms=nan(nsuj,npermutation);
+    for nperm=1:npermutation
+        all_perms(:,nperm)=randperm(size(data,1));
+    end
     
     %% Stats
     fprintf('Calculating F-values (anova)...');
     %     tic;
     rdm = data;
     
-    rd=nan(size(data,2),3);
-    pd=nan(npermutation,size(data,2),3);
+    if strcmp(model,'full')
+        rd=nan(size(data,2),3);
+        pd=nan(npermutation,size(data,2),3);
+    else
+        rd=nan(size(data,2),2);
+        pd=nan(npermutation,size(data,2),2);
+    end
     fprintf('... sample %4.0f perm %4.0f',0,0)
     for nt=1:size(data,2)
-        [~,TAB,~] = anovan(rdm(:,nt), group,'model','full','display','off');
-        rd(nt,:) = cell2mat(TAB(2:4,6));
-        rdpv(nt,:) = cell2mat(TAB(2:4,7));
+             [~,TAB,~] = anovan(rdm(:,nt), group,'model',model,'display','off');
+       if strcmp(model,'full')
+            rd(nt,:) = cell2mat(TAB(2:4,6));
+            rdpv(nt,:) = cell2mat(TAB(2:4,7));
+        else
+            rd(nt,:) = cell2mat(TAB(2:3,6));
+            rdpv(nt,:) = cell2mat(TAB(2:3,7));
+        end
         
         for nperm=1:npermutation
             fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b... sample %4.0f perm %4.0f',nt,nperm)
-            pdm = data(randperm(size(data,1)),:);
+            pdm = data(all_perms(:,nperm),:);
             [~,TAB,~] = anovan(pdm(:,nt), group,'model','full','display','off');
-            pd(nperm,nt,:) = cell2mat(TAB(2:4,6));
-            pdpv(nperm,nt,:) = cell2mat(TAB(2:4,7));
+            if strcmp(model,'full')
+                pd(nperm,nt,:) = cell2mat(TAB(2:4,6));
+%                 pdpv(nperm,nt,:) = cell2mat(TAB(2:4,7));
+            else
+                pd(nperm,nt,:) = cell2mat(TAB(2:3,6));
+%                 pdpv(nperm,nt,:) = cell2mat(TAB(2:3,7));
+            end
         end
     end
     %     toc;
