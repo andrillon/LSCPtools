@@ -1,4 +1,4 @@
-function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalpha,clusteralpha,npermutation,sTime,model)
+function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalpha,clusteralpha,npermutation,sTime,model,contVarIndex)
 
 % Input
 % - data: cell array (1 cell per condition:  channels * times * subjects
@@ -11,7 +11,9 @@ function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalph
 if nargin<7
     model='full';
 end
-
+if nargin<7
+    contVarIndex=[];;
+end
 %% Bootstrap
 % fprintf('Calculating permutations...');
 if size(group,2)==1
@@ -139,7 +141,7 @@ else
     end
     fprintf('... sample %4.0f perm %4.0f',0,0)
     for nt=1:size(data,2)
-             [~,TAB,~] = anovan(rdm(:,nt), group,'model',model,'display','off');
+             [~,TAB,~] = anovan(rdm(:,nt), group,'model',model,'display','off','continuous',contVarIndex);
        if strcmp(model,'full')
             rd(nt,:) = cell2mat(TAB(2:4,6));
             rdpv(nt,:) = cell2mat(TAB(2:4,7));
@@ -151,7 +153,7 @@ else
         for nperm=1:npermutation
             fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b... sample %4.0f perm %4.0f',nt,nperm)
             pdm = data(all_perms(:,nperm),:);
-            [~,TAB,~] = anovan(pdm(:,nt), group,'model','full','display','off');
+            [~,TAB,~] = anovan(pdm(:,nt), group,'model','full','display','off','continuous',contVarIndex);
             if strcmp(model,'full')
                 pd(nperm,nt,:) = cell2mat(TAB(2:4,6));
 %                 pdpv(nperm,nt,:) = cell2mat(TAB(2:4,7));
