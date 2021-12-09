@@ -1,4 +1,4 @@
-function [hdot pV]=simpleDotPlot(Pos,data,sizeDot,colorBar,widthBar,colorError,markerType,sigFlag,widthLine,spreadFlag,boxFlag)
+function [hdot pV]=simpleDotPlot(Pos,data,sizeDot,colorBar,widthBar,colorError,markerType,sigFlag,widthLine,spreadFlag,boxFlag,splitFlag)
 % INPUT:
 % - Pos         : x-position of the center of the bar
 % - data        : vector of data to plot
@@ -25,6 +25,9 @@ end
 if nargin<11
     boxFlag=0;
 end
+if nargin<12
+    splitFlag=0;
+end
 if nargin<7
     markerType='o';
 end
@@ -40,13 +43,13 @@ if isempty(sizeDot)
 end
 hold on;
 if boxFlag
-    line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*prctile(data,25),'Color',colorBar(1,:),'LineWidth',widthLine)
-    line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*prctile(data,75),'Color',colorBar(1,:),'LineWidth',widthLine)
-    line([Pos-0.1*widthBar Pos-0.1*widthBar],[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
-    line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1].*nanmean(data),'Color',colorBar(1,:),'LineWidth',widthLine+1)
-    line([Pos+0.1*widthBar Pos+0.1*widthBar],[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1].*prctile(data,25),'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1].*prctile(data,75),'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos-0.1*widthBar]+splitFlag,[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
+    line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1].*nanmean(data),'Color',colorBar(1,:),'LineWidth',widthLine+1)
+    line([Pos+0.1*widthBar Pos+0.1*widthBar]+splitFlag,[prctile(data,25) prctile(data,75)],'Color',colorBar(1,:),'LineWidth',widthLine)
     
-    patch([Pos-0.1*widthBar Pos+0.1*widthBar Pos+0.1*widthBar Pos-0.1*widthBar Pos-0.1*widthBar]',...
+    patch([Pos-0.1*widthBar Pos+0.1*widthBar Pos+0.1*widthBar Pos-0.1*widthBar Pos-0.1*widthBar]'+splitFlag,...
         [prctile(data,25) prctile(data,25) prctile(data,75) prctile(data,75) prctile(data,25)]',colorBar(1,:),'FaceAlpha',0.5,'EdgeColor','none');
     %    minBoxPlot=prctile(data,25)-1.5*(prctile(data,75)-prctile(data,25));
     %    maxBoxPlot=prctile(data,75)+1.5*(prctile(data,75)-prctile(data,25));
@@ -56,21 +59,21 @@ if boxFlag
     %    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*minBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
     %    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*maxBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
     if spreadFlag
-        xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos;
+        xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos-splitFlag;
         hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorBar(2,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4);
     end
     
 else
     if spreadFlag
-        xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos;
+        xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos-splitFlag;
         hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorBar(2,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4);
     end
     
     if sigFlag{1}==1
         
-        hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
-        hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
-        hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+        hdot.line{1}=line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+        hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+        hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
         if length(data)==length(sigFlag{2}) || length(sigFlag{2})==1
             [h, pV, ~, stats]=ttest(data,sigFlag{2});
             fprintf('... paired t-test p=%1.5f (t(%g)=%2.3f)\n',pV,stats.df,stats.tstat);
@@ -80,16 +83,16 @@ else
         end
         if pV<sigFlag{3}
             if nanmean(data)>0
-                plot(Pos,1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
+                plot(Pos+splitFlag,1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
             else
-                plot(Pos,-1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
+                plot(Pos+splitFlag,-1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
             end
         end
         hdot.mean=scatter(Pos,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
     elseif sigFlag{1}==2
-        hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError);
-        hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError);
-        hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError);
+        hdot.line{1}=line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError);
+        hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError);
+        hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError);
         
         if length(data)==length(sigFlag{2}) || length(sigFlag{2})==1
             [pV h]=signrank(data,sigFlag{2});
@@ -100,12 +103,12 @@ else
         end
         if pV<sigFlag{3}
             if nanmedian(data)>0
-                plot(Pos,1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
+                plot(Pos+splitFlag,1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
             else
-                plot(Pos,-1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
+                plot(Pos+splitFlag,-1.3*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'*k')
             end
         end
-        hdot.mean=scatter(Pos,nanmedian(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
+        hdot.mean=scatter(Pos+splitFlag,nanmedian(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
     elseif sigFlag{1}==0 && length(sigFlag)==3
         if length(data)==length(sigFlag{2}) || length(sigFlag{2})==1
             [h, pV, ~, stats]=ttest(data,sigFlag{2});
@@ -115,33 +118,33 @@ else
             fprintf('... non-paired t-test p=%1.5f (t(%g)=%2.3f)\n',pV,stats.df,stats.tstat);
         end
         if widthLine>1
-            hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
-            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
-            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+            hdot.line{1}=line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
             
         else
-            hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
-            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
-            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
+            hdot.line{1}=line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
+            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
+            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
             
         end
-        hdot.mean=scatter(Pos,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
+        hdot.mean=scatter(Pos+splitFlag,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
     elseif sigFlag{1}==4
-        line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError)
+        line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmedian(data),'LineWidth',widthLine-1,'Color',colorError)
         
-        hdot=scatter(Pos,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
+        hdot=scatter(Pos+splitFlag,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
     else
         if widthLine>1
-            hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
-            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
-            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+            hdot.line{1}=line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
+            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine-1,'Color',colorError);
             
         else
-            hdot.line{1}=line([1 1]*Pos,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
-            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
-            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar],[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
+            hdot.line{1}=line([1 1]*Pos+splitFlag,[-1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
+            hdot.line{2}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[-1 -1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
+            hdot.line{3}=line([Pos-0.1*widthBar Pos+0.1*widthBar]+splitFlag,[1 1]*nanstd(data)/sqrt(sum(~isnan(data))-1)+nanmean(data),'LineWidth',widthLine,'Color',colorError);
             
         end
-        hdot.mean=scatter(Pos,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
+        hdot.mean=scatter(Pos+splitFlag,nanmean(data),'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorError,'LineWidth',widthLine,'SizeData',sizeDot);
     end
 end

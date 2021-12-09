@@ -56,7 +56,7 @@ if nargin<3
 end
 if isfield(paramDetection,'spindleBand'),         spindleBand=paramDetection.spindleBand;                 else spindleBand=[11 16 4]; end
 if isfield(paramDetection,'minMax_SD_threshold'), minMax_SD_threshold=paramDetection.minMax_SD_threshold; else minMax_SD_threshold=[3 10 1]; end % 3 10 1
-if isfield(paramDetection,'minMaxDurations_ms'),  minMaxDurations_ms=paramDetection.minMaxDurations_ms;   else minMaxDurations_ms=[0.5 2.5]; end
+if isfield(paramDetection,'minMaxDurations_ms'),  minMaxDurations_ms=paramDetection.minMaxDurations_ms;   else minMaxDurations_ms=[500 2500]; end
 if isfield(paramDetection,'minFreqValue'),        minFreqValue=paramDetection.minFreqValue;               else minFreqValue=11; end
 if isfield(paramDetection,'maxFreqValue'),        maxFreqValue=paramDetection.maxFreqValue;               else maxFreqValue=17; end
 if isfield(paramDetection,'PlotFlag'),            PlotFlag=paramDetection.PlotFlag;                       else PlotFlag=0; end
@@ -77,7 +77,12 @@ countChan=0;
 for nChan=ChannelSelection
     countChan=countChan+1;
     fprintf('... detecting spindles on %s (%g/%g)',hdr.label{nChan},countChan,length(ChannelSelection))
-    EEGdata=squeeze(data(nChan,:));
+    if ndims(data)==2
+        EEGdata=squeeze(data(nChan,:));
+    else
+        EEGdata=squeeze(data(nChan,:,:));
+        EEGdata=reshape(EEGdata',1,numel(EEGdata));
+    end
     %% Filter the EEG within the spindle range
     EEGdata_BP_spindles=bandpass(EEGdata, SR, spindleBand(1), spindleBand(2), spindleBand(3));
     EEGdata_BP_broad=bandpass(EEGdata, SR, 0.1, 30, spindleBand(3));
@@ -91,10 +96,12 @@ for nChan=ChannelSelection
         if length(SleepScoring_vector)~=size(data,2)
             error('Wrong size scoring');
         end
-        SleepStages_ts=SleepScoring_vector;
+        SleepStages_ts=repmat(SleepScoring_vector',1,size(data,3));
+        SleepStages_ts=reshape(SleepStages_ts',1,numel(SleepStages_ts));
         if NREMonlyForThr
             NREM23epochs = find( ismember(SleepStages_ts,[1 2 3])); % Here stages are coded as follows: Wake: 0, N1: 1, N2: 2, N3: 3, REM: 5
-            EpochsOfInterest=NREM23epochs;
+            EpochsOfInterest=zeros(1,length(EEGdata));
+            EpochsOfInterest(NREM23epochs)=1;
         else
             EpochsOfInterest=logical(ones(1,length(EEGdata)));
         end
@@ -130,6 +137,9 @@ for nChan=ChannelSelection
     these_spindlesOutDuration = [];
     these_spindlesOutEnergy = [];
     
+    if isnan(detectionThresholds(1))
+        return;
+    end
     
     %% %% Detection
     % Transform envelope so that every point above the threshold is a 'zero crossing'
@@ -193,7 +203,7 @@ for nChan=ChannelSelection
         % Compute Spindle Start and End time
         spindleStartTime = findNearestPointBefore(poscross(sndx), poscrossMinimal);
         spindleEndTime   = findNearestPointAfter(negcross(sndx),  negcrossMinimal) ;
-        if spindleStartTime-SR<1 || spindleEndTime+SR>length(EEGdata_BP_spindles)
+        if isempty(spindleStartTime) || isempty(spindleEndTime) || spindleStartTime-SR<1 || spindleEndTime+SR>length(EEGdata_BP_spindles)
             continue;
         end
         if (length(spindleStartTime) .* length(spindleEndTime) == 0) % failed to get start time or end time for some reason
