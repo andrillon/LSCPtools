@@ -86,7 +86,7 @@ for nChan=ChannelSelection
     %% Filter the EEG within the spindle range
     EEGdata_BP_spindles=bandpass(EEGdata, SR, spindleBand(1), spindleBand(2), spindleBand(3));
     EEGdata_BP_broad=bandpass(EEGdata, SR, 0.1, 30, spindleBand(3));
-    EEGdata_BP_high=bandpass(EEGdata, SR, 40, 55, spindleBand(3));
+    EEGdata_BP_high=bandpass(EEGdata, SR, 30, 50, spindleBand(3));
     EEGdata_BP_alpha=bandpass(EEGdata, SR, 8, 10, spindleBand(3));
     %% Select only sleep segments
     if isempty(SleepScoring_vector)

@@ -31,11 +31,15 @@ end
 fsample_ori=hdr.Fs;
 
 %% Down sample to 100Hz
-SR_new=100;
-for nch=ChannelSelection
-    datres(nch,:)=resample(datfilt(nch,:),SR_new,SR);
+    SR_new=100;
+if SR~=SR_new
+    for nch=ChannelSelection
+        datres(nch,:)=resample(datfilt(nch,:),SR_new,SR);
+    end
+        SleepScoring_vector=resample(SleepScoring_vector,SR_new,SR);
+else
+    datres=datfilt;
 end
-
 
 countChan=0;
 if size(ChannelSelection,1)>size(ChannelSelection,2)
