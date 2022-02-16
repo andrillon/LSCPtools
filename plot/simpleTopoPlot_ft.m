@@ -37,6 +37,11 @@ elseif contourF==1
 elseif contourF==2
     cfg.style='contour';
 end
+if newF
+    cfg.figure='yes'
+else
+    cfg.figure='gcf';
+end
 dat=[];
 dat.avg=data;
 dat.dimord='chan';
