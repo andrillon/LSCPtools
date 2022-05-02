@@ -130,7 +130,7 @@ for nChan=ChannelSelection
     DetectionThreshold  = detectionThresholds(1) + detectionThresholds(2)*minMax_SD_threshold(1);
     RejectThreshold     = detectionThresholds(1) + detectionThresholds(2)*minMax_SD_threshold(2);
     StartEndThreshold   = detectionThresholds(1) + detectionThresholds(2)*minMax_SD_threshold(3);
-    
+    fprintf(' ... detection threshold %g | start/end threshold  %g | rejection threshold %g',DetectionThreshold,StartEndThreshold,RejectThreshold)
     
     %% Initialization of variables to save
     these_spindles = [];

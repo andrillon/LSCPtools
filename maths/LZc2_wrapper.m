@@ -89,7 +89,8 @@ function Y = Pre(X)
 Y = zeros(D,N);
 
 for d = 1:D
-    Y(d,:) = detrend( X(d,:) - mean(X(d,:)) );
+    temp=detrend( X(d,:) - mean(X(d,:)) );
+    Y(d,:) = temp;
 end
 end
 

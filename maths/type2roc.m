@@ -1,4 +1,4 @@
-function auroc2 = type2roc(correct, conf, Nratings)
+function [auroc2, cum_H2, cum_FA2] = type2roc(correct, conf, Nratings)
 % Taken from Fleming & Lau (2014)
 % Computes metacognitive sensitivity accounting for metacognitive bias.
 %

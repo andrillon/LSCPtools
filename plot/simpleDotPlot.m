@@ -60,7 +60,7 @@ if boxFlag
     %    line([Pos-0.1*widthBar/2 Pos+0.1*widthBar/2],[1 1].*maxBoxPlot,'Color',colorBar(1,:),'LineWidth',widthLine)
     if spreadFlag
         xspread=(rand(1,length(data))-0.5)*widthBar/4+Pos-splitFlag;
-        hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(1,:),'MarkerEdgeColor',colorBar(2,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4);
+        hdot.ind=scatter(xspread,data,'Marker',markerType,'MarkerFaceColor',colorBar(2,:),'MarkerEdgeColor',colorBar(1,:),'MarkerFaceAlpha',0.5,'SizeData',sizeDot/4,'LineWidth',widthLine);
     end
     
 else

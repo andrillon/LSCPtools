@@ -12,10 +12,16 @@ if nargin<3
     param.method='fft';
     param.mindist=1;
 end
-
+if ~isfield(param,'mindist')
+    param.mindist=0.1;
+end
 if strcmp(param.method,'fft')
     T=size(data,2)/SR;
+    if isfield(param,'w_df')
+        df=param.w_df;
+    else
     df = 1/T;
+    end
     fNQ = SR/2;
     numfreq = length((0:df:fNQ));
     
@@ -25,7 +31,7 @@ if strcmp(param.method,'fft')
 end
 if strcmp(param.method,'welch')
     if ~isfield(param,'w_window')
-        w_window=length(signal);
+        w_window=length(data);
     else
         w_window=param.w_window;
     end
