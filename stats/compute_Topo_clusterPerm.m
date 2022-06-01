@@ -1,5 +1,8 @@
-function compute_Topo_clusterPerm(dat1,dat2,time,chanlabels,fsample,clusteralpha,mc_alpha,nperm,layout,layoutName)
+function [stat] = compute_Topo_clusterPerm(dat1,dat2,time,chanlabels,fsample,clusteralpha,mc_alpha,nperm,layout,layoutName,minNumChan)
 
+if nargin<11
+    minNumChan=0;
+end
 %%% PREPARE DATA
 % cfg=[];
 cfg.layout = layout;
@@ -9,7 +12,7 @@ cfg.layout = layout;
 data_cond1.label = chanlabels;
 data_cond1.time = time;
 data_cond1.dimord = 'subj_chan_time';
-data_cond1.individual = calc_zvalues(dat1,1);
+data_cond1.individual = dat1; %calc_zvalues(dat1,1);
 data_cond1.elec = layout.cfg.elec;
 data_cond1.cfg = cfg;
 data_cond1.fsample = fsample;
@@ -17,7 +20,7 @@ data_cond1.fsample = fsample;
 data_cond2.label = chanlabels;
 data_cond2.time = time;
 data_cond2.dimord = 'subj_chan_time';
-data_cond2.individual = calc_zvalues(dat2,1);
+data_cond2.individual = dat2; %calc_zvalues(dat2,1);
 data_cond2.elec = layout.cfg.elec;
 data_cond2.cfg = cfg;
 data_cond2.fsample = fsample;
@@ -34,7 +37,7 @@ cfg.clusterstatistic = 'maxsum';
 %   cfg.wcm_weight       = 1;
 
 % cfg.minnbchan = minnbchan;
-cfg.minnbchan        = 0;
+cfg.minnbchan        = minNumChan;
 cfg.tail             = 0;
 cfg.clustertail      = 0;
 %     cfg.alpha            = 0.025;
@@ -64,7 +67,7 @@ design(2,1:subj)        = 1;
 design(2,subj+1:2*subj) = 2;
 
 cfg.statistic        = 'depsamplesT';
-cfg.design   = design;
+cfg.design   = design';
 
 % data_cond2 = data_cond1;
 % %         data_cond2.(zparam) = squeeze(permute(data2,[3,1,2]));

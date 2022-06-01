@@ -121,6 +121,8 @@ if ~isempty(chanindx)
   lay.width  = lay.width(chanindx);
   lay.height = lay.height(chanindx);
   lay.label  = lay.label(chanindx);
+else 
+    return;
 end
 
 % the units can be arbitrary (e.g. relative or pixels), so we need to compute the right scaling factor and offset

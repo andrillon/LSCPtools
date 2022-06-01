@@ -6,21 +6,34 @@ cfg.layout = layout;
 %     layout = ft_prepare_layout(cfg);       %Layout of the electrodes
 
 % build data for field trip functions (should be D.ftraw, don't works for time-frequency)
-data_cond1.label = chanlabels;
-data_cond1.time = time;
-data_cond1.dimord = 'subj_chan_time';
-data_cond1.individual = dat1;
-data_cond1.elec = layout.cfg.elec;
-data_cond1.cfg = cfg;
-data_cond1.fsample = fsample;
-
-data_cond2.label = chanlabels;
-data_cond2.time = time;
-data_cond2.dimord = 'subj_chan_time';
-data_cond2.individual = dat2;
-data_cond2.elec = layout.cfg.elec;
-data_cond2.cfg = cfg;
-data_cond2.fsample = fsample;
+if ~isstruct(dat1) && ~isstruct(dat2)
+    data_cond1.label = chanlabels;
+    data_cond1.time = time;
+    data_cond1.dimord = 'subj_chan_time';
+    data_cond1.individual = dat1;
+    data_cond1.elec = layout.cfg.elec;
+    data_cond1.cfg = cfg;
+    data_cond1.fsample = fsample;
+    
+    data_cond2.label = chanlabels;
+    data_cond2.time = time;
+    data_cond2.dimord = 'subj_chan_time';
+    data_cond2.individual = dat2;
+    data_cond2.elec = layout.cfg.elec;
+    data_cond2.cfg = cfg;
+    data_cond2.fsample = fsample;
+else
+    data_cond1=dat1;
+    data_cond2=dat2;
+    
+    data_cond1.dimord = 'subj_chan_time';
+    data_cond1.individual = dat1.avg;
+    data_cond1.fsample = fsample;
+    
+    data_cond2.dimord = 'subj_chan_time';
+    data_cond2.individual = dat2.avg;
+    data_cond2.fsample = fsample;
+end
 
 % run the clustering/permutation statistics
 cfg = [];
@@ -56,7 +69,7 @@ cfg.neighbours       = neighbours;
 %     [stat] = ft_timelockstatistics(cfg, GA_FIC, GA_FC)
 cfg.uvar     = 1;
 cfg.ivar     = 2;
-subj = size(dat1,1);
+subj = size(data_cond1.individual,1);
 design = zeros(2,2*subj);
 for i = 1:subj
     design(1,i) = i;
@@ -68,9 +81,10 @@ design(2,1:subj)        = 1;
 design(2,subj+1:2*subj) = 2;
 
 cfg.statistic        = 'depsamplesT';
-cfg.design   = design;
+cfg.design   = design';
 
 % data_cond2 = data_cond1;
 % %         data_cond2.(zparam) = squeeze(permute(data2,[3,1,2]));
 % data_cond2.(zparam) =  calc_zvalues(dat,1);
+cfg.latency = [data_cond1.time(1) data_cond1.time(end)];
 [stat] = ft_timelockstatistics(cfg, data_cond1,data_cond2);
