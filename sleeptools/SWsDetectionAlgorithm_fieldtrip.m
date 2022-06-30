@@ -36,7 +36,7 @@ if SR~=SR_new
     for nch=ChannelSelection
         datres(nch,:)=resample(datfilt(nch,:),SR_new,SR);
     end
-        SleepScoring_vector=resample(SleepScoring_vector,SR_new,SR);
+        SleepScoring_vector=round(resample(SleepScoring_vector,SR_new,SR));
 else
     datres=datfilt;
 end

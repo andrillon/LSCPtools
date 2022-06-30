@@ -42,7 +42,7 @@
 %%% --------------------------------------------
 
 
-function [spindles spindlesOutEnergy spindlesOutDuration] = SpindlesDetectionAlgorithm_fieldtrip(data,hdr, SleepScoring_vector, paramDetection)
+function [spindles spindlesOutEnergy spindlesOutDuration rej_cand] = SpindlesDetectionAlgorithm_fieldtrip(data,hdr, SleepScoring_vector, paramDetection)
 
 spindles=[];
 spindlesOutEnergy=[];
@@ -85,7 +85,7 @@ for nChan=ChannelSelection
     end
     %% Filter the EEG within the spindle range
     EEGdata_BP_spindles=bandpass(EEGdata, SR, spindleBand(1), spindleBand(2), spindleBand(3));
-    EEGdata_BP_broad=bandpass(EEGdata, SR, 0.1, 30, spindleBand(3));
+    EEGdata_BP_broad=bandpass(EEGdata, SR, 0.5, 30, spindleBand(3));
     EEGdata_BP_high=bandpass(EEGdata, SR, 30, 50, spindleBand(3));
     EEGdata_BP_alpha=bandpass(EEGdata, SR, 8, 10, spindleBand(3));
     %% Select only sleep segments
@@ -99,7 +99,7 @@ for nChan=ChannelSelection
         SleepStages_ts=repmat(SleepScoring_vector',1,size(data,3));
         SleepStages_ts=reshape(SleepStages_ts',1,numel(SleepStages_ts));
         if NREMonlyForThr
-            NREM23epochs = find( ismember(SleepStages_ts,[1 2 3])); % Here stages are coded as follows: Wake: 0, N1: 1, N2: 2, N3: 3, REM: 5
+            NREM23epochs = find( ismember(SleepStages_ts,[1 2 3 4])); % Here stages are coded as follows: Wake: 0, N1: 1, N2: 2, N3: 3, REM: 5
             EpochsOfInterest=zeros(1,length(EEGdata));
             EpochsOfInterest(NREM23epochs)=1;
         else
@@ -159,6 +159,9 @@ for nChan=ChannelSelection
     end
     
     %% Spindles Between 2 segments
+    % supress poscross too close from edge (2s)
+    poscross(poscross<2*SR)=[];
+    poscross(poscross>length(EEGdata)-2*SR)=[];
     % Correct anomalies in negcross and poscross
     if max(isempty(poscross),isempty(negcross))==0
         if poscross(end)>negcross(end)
@@ -179,9 +182,7 @@ for nChan=ChannelSelection
     else
         continue;
     end
-    % supress poscross too close from edge (2s)
-    poscross(poscross<2*SR)=[];
-    poscross(poscross>length(EEGdata)-2*SR)=[];
+    
     
     % Transform envelope relative to StartEnd threshold to compute spindle durations
     envelopeMinusBottomThreshold = envelope - StartEndThreshold;
@@ -193,10 +194,12 @@ for nChan=ChannelSelection
     spindleStartTimeArray = []; % we build these arrays as a tool to avoid detecting the same spindle twice
     spindleEndTimeArray   = [];
     sndx=0;
+    rej_cand=[];
     while sndx<length(poscross)
         
         sndx=sndx+1;
         if isempty(poscrossMinimal) || isempty(negcrossMinimal) % Signal crossed the detection threshold but did not corss twice the StartEnd thr
+            rej_cand=[rej_cand 1];
             continue;
         end
       
@@ -204,16 +207,19 @@ for nChan=ChannelSelection
         spindleStartTime = findNearestPointBefore(poscross(sndx), poscrossMinimal);
         spindleEndTime   = findNearestPointAfter(negcross(sndx),  negcrossMinimal) ;
         if isempty(spindleStartTime) || isempty(spindleEndTime) || spindleStartTime-SR<1 || spindleEndTime+SR>length(EEGdata_BP_spindles)
-            continue;
+            rej_cand=[rej_cand 2];
+continue;
         end
         if (length(spindleStartTime) .* length(spindleEndTime) == 0) % failed to get start time or end time for some reason
-            continue;
+                     rej_cand=[rej_cand 3];
+   continue;
         end
         spindleDuration  = spindleEndTime - spindleStartTime + 1;
         
         % Check duration is over 0.5s
         if spindleDuration/SR<0.5
-            continue;
+                       rej_cand=[rej_cand 4];
+ continue;
         end
         
         % Check that this spindle candidate is not too close from the next one
@@ -230,7 +236,8 @@ for nChan=ChannelSelection
             end
         end
          if spindleStartTime-SR<1 || spindleEndTime+SR>length(EEGdata_BP_spindles)
-            continue;
+                     rej_cand=[rej_cand 5];
+   continue;
          end
         
         % Compute Spindle Duration
@@ -238,9 +245,11 @@ for nChan=ChannelSelection
         
         % Make sure this is not just another peak for the same spindle (as judged by its start and end times) if so continue and ignore..
         if (size(intersect([spindleStartTime], spindleStartTimeArray) > 0))
-            continue;
+                      rej_cand=[rej_cand 6];
+  continue;
         elseif (size(intersect([spindleEndTime], spindleEndTimeArray) > 0))
-            continue;
+                     rej_cand=[rej_cand 7];
+   continue;
         end
         spindleStartTimeArray = [spindleStartTimeArray; spindleStartTime];
         spindleEndTimeArray = [spindleEndTimeArray; spindleEndTime];
@@ -257,7 +266,8 @@ for nChan=ChannelSelection
         
         % discard spindle if spindles occurs during artefacted epochs
         if max(abs(hilbert(EEGdata_BP_high(spindleStartTime-SR:spindleEndTime+SR))))>30
-            continue;
+                     rej_cand=[rej_cand 8];
+   continue;
         end
         %         % Power Spectrum
         %         [faxis,myPSDs]= get_PowerSpec_new(EEGdata(max(peakTime-499,1):min(peakTime+500,10000)),1/1000,1);
@@ -282,13 +292,14 @@ for nChan=ChannelSelection
             currentStage=NaN;
         end
         % Sum-up
-        currentSpindle=[spindleStartTime spindleEndTime peakTime peakEnergy peakEnergyNorm freqSpindle spindleDuration PowerSP PowerAlpha currentStage];
+        currentSpindle=[spindleStartTime spindleEndTime peakTime peakEnergy peakEnergyNorm freqSpindle spindleDuration/SR PowerSP PowerAlpha currentStage];
         
         %% %% Sort Spindles
         % Candidate discarded: Peak Energy too highg
         if (peakEnergy > RejectThreshold)
             these_spindlesOutEnergy = [these_spindlesOutEnergy ; currentSpindle];
-            continue;
+                      rej_cand=[rej_cand 9];
+  continue;
         end
         
         % Candidate discarded: Out Because of  Duration
@@ -296,7 +307,8 @@ for nChan=ChannelSelection
             these_spindles = [these_spindles ; currentSpindle];
         else
             these_spindlesOutDuration = [these_spindlesOutDuration ; currentSpindle];
-            continue;
+                  rej_cand=[rej_cand 10];
+      continue;
         end
         
         
