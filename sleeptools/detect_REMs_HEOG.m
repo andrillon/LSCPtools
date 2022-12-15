@@ -27,7 +27,7 @@
 %%% Last update: 2-28-12
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [REMs , false_detection] = detect_REMs_HEOG(EOG1, EOG2, param)
+function [REMs , false_detection] = detect_REMs_HEOG(HEOG, param)
 
 %% Initialization
 REMs=[];
@@ -49,42 +49,34 @@ end
 % tic;
 Fs=param.Fs;
 
-% EOG1 and EOG2
-eog1=EOG1;
-eog2=EOG2;
+% HEOG
 
 % (1) Broad bandpass
-eog1_Broad=bandpass(eog1,Fs,0.1,30,3);
-eog2_Broad=bandpass(eog2,Fs,0.1,30,3);
+HEOG_Broad=bandpass(HEOG,Fs,0.1,30,3);
 
 % (2) BP 3 Hz
-eog1_BP=bandpass(eog1,Fs,0.1,3,3);
-eog2_BP=bandpass(eog2,Fs,0.1,3,3);
+HEOG_BP=bandpass(HEOG,Fs,0.1,3,3);
 
 % (3) Zscore
 % if ~isempty(scoring)
-%     eog1_BP=(eog1_BP-mean(eog1_BP(param.scoring==0)))/std(eog1_BP(param.scoring==0));
+%     HEOG_BP=(HEOG_BP-mean(HEOG_BP(param.scoring==0)))/std(HEOG_BP(param.scoring==0));
 %     eog2_BP=(eog2_BP-mean(eog2_BP(param.scoring==0)))/std(eog2_BP(param.scoring==0));
 % else
-    eog1_BP   = zscore(eog1_BP);
-    eog2_BP   = zscore(eog2_BP);
 % end
 
 % (4) gradient
-grad_eog1=abs(eog1_BP(:,round(81*Fs/1000):end)-eog1_BP(:,1:end-round(80*Fs/1000)+1));
-grad_eog2=abs(eog2_BP(:,round(81*Fs/1000):end)-eog2_BP(:,1:end-round(80*Fs/1000)+1));
+grad_HEOG=abs(HEOG_BP(:,round(81*Fs/1000):end)-HEOG_BP(:,1:end-round(80*Fs/1000)));
+    HEOG_BP   = zscore(HEOG_BP);
 
 % fprintf('  ... took ... %g  s\n',toc)
 
 %% Detection REMs based on different criterions
-% fprintf('\n>>>> Detect REMs on EOG1 ...\n')
-eog_BP=eog1_BP;
-eog_Broad=eog1_Broad;
-grad_eog=grad_eog1;
-eog1_LP=bandpass(eog1,Fs,0.1,7,3);
-eog2_LP=bandpass(eog2,Fs,0.1,7,3);
-der_1 = diff(eog1_LP);
-der_2 = diff(eog2_LP);
+% fprintf('\n>>>> Detect REMs on HEOG ...\n')
+eog_BP=HEOG_BP;
+eog_Broad=HEOG_Broad;
+grad_eog=grad_HEOG;
+HEOG_LP=bandpass(HEOG,Fs,0.1,7,3);
+der_1 = diff(HEOG_LP);
 
 FlagEM=1;
 eog_BP_aboveThr=abs(eog_BP)>thresholdParam(1);
@@ -105,13 +97,9 @@ for nREM=1:length(pos_candidates)
     end
     dist1 = abs(der_1(st_idx:pos_cross));
     [min_dist, idx1] = min(dist1);
-    begin1 = pos_cross - (length(dist1) - idx1)+1;
+    begin = pos_cross - (length(dist1) - idx1)+1;
     
-    dist2 = abs(der_2(st_idx:pos_cross));
-    [min_dist, idx2] = min(dist2);
-    begin2 = pos_cross - (length(dist2) - idx2)+1;
-    
-    begin=round((begin1+begin2)/2);
+  
         if ~isempty(scoring)
         thisScore=scoring(begin);
     else
@@ -161,22 +149,24 @@ for nREM=1:length(pos_candidates)
 %         continue;
 %     end
     
-%      % (5) if duration is too short
-%     if (neg_cross-pos_cross)<exclusionParam(4)*Fs
-%         %         lastREM=peak_cross;
-%         false_detection=[false_detection ; [
-%             begin, ... (2) Begin
-%             ending, ... (3) End
-%             eog_BP(peak_cross),...
-%             thisScore,...
-%             3.5]]; %
-%         continue;
-%     end
+     % (5) if duration is too short
+    if (neg_cross-pos_cross)<exclusionParam(2)*Fs
+        %         lastREM=peak_cross;
+        false_detection=[false_detection ; [
+            begin, ... (2) Begin
+            ending, ... (3) End
+            eog_BP(peak_cross),...
+            thisScore,...
+                    NaN,...
+            NaN,...
+    3]]; %
+        continue;
+    end
     
     % (6) find real peak in broadly band-passed EOG: if outside
     % pos_cross:neg_cross, discard
     % get broad BP eog
-    if peak_cross-0.5*Fs<1 || peak_cross+0.5*Fs>length(EOG1)
+    if peak_cross-0.5*Fs<1 || peak_cross+0.5*Fs>length(HEOG)
         continue;
     end
     thisrealeog=eog_Broad((-0.5*Fs:0.5*Fs)+peak_cross);
@@ -185,56 +175,26 @@ for nREM=1:length(pos_candidates)
     timemax_real1=find(thisrealeog==max_real1); timemax_real1=timemax_real1(1);
     peakTimeeog=peak_cross - 0.5*Fs + round(timemax_real1);
     
-    if eog1_BP(peak_cross)>thresholdParam(1)
+    if HEOG_BP(peak_cross)>thresholdParam(1)
         dirREM=1;
-    elseif eog1_BP(peak_cross)<-thresholdParam(1)
+    elseif HEOG_BP(peak_cross)<-thresholdParam(1)
         dirREM=-1;
     else
         dirREM=0;
     end
         
-    % check opposite signs and above threshold for the other one
-    thisrealeog2=eog2_Broad(peak_cross);%(-0.5*Fs:0.5*Fs)+peak_cross
-    max_real2=max(abs(thisrealeog2));
-    if max_real2<thresholdParam(1)
-        false_detection=[false_detection ; [
-            begin, ... (2) Begin
-            ending, ... (3) End
-            eog_BP(peak_cross),...
-            thisScore,...
-            NaN,...
-            NaN,...
-            5]]; %
-        continue;
-    end
     
-    max_sign1=sign(eog1_Broad(peak_cross));
-    max_sign2=sign(eog2_Broad(peak_cross));
-    if max_sign1==max_sign2
-        false_detection=[false_detection ; [
-            begin, ... (2) Begin
-            ending, ... (3) End
-            eog_BP(peak_cross),...
-            thisScore,...
-            NaN,...
-            NaN,...
-            6]]; %
-        continue;
-    end    
-        
+    max_sign1=sign(HEOG_Broad(peak_cross));
+ 
     % (7) Find slop maximum
     thisgrad1=grad_eog((round(-0.3*Fs):0)+peak_cross);
      maxslope1=max(thisgrad1);
      timemaxslope1=find(thisgrad1==maxslope1); timemaxslope1=timemaxslope1(1);
     slopeTimeeog=peak_cross - 0.5*Fs + round(timemaxslope1);
 
-    thisgrad2=grad_eog2((round(-0.3*Fs):0)+peak_cross);
-    maxslope2=max(thisgrad2);
-%     maxslope2=maxslope2/5;
-%     maxslope1=maxslope1/5;
+    slope1=abs(HEOG_Broad(peak_cross)-HEOG_Broad(begin))/((peak_cross-begin)/Fs);
 
-
-    if (maxslope1>exclusionParam(3) && maxslope2>exclusionParam(3))
+    if (slope1>exclusionParam(3))
         % (1) Segment (2) Begin (3) End (4) Peak time (5) slope peak time (6) Peak EOG times (7) Peak ampl eog (8) Peak ampl EOG2 (9) Slope max 1 (10) Slope max 2 (11) Duration (12) Stage
         lastREM=peak_cross;
         REMs=[REMs ; [
@@ -243,13 +203,12 @@ for nREM=1:length(pos_candidates)
             peak_cross ... (3) Peak prod time
             slopeTimeeog, ... (4) slope peak time
             peakTimeeog, ... (5) Peak EOGs time
-            eog1_BP(peak_cross), ... (6) Peak ampl eog
-            eog2_BP(peak_cross), ... (7) Peak ampl eog
-            maxslope1, ... (8) Slope max 1
-            maxslope2, ... (9) Slope max 1
-            (neg_cross-pos_cross), ... (10) Duration
-            thisScore,... %(11) direction REM
-            dirREM,... %(12) direction REM
+            HEOG_BP(peak_cross), ... (6) Peak ampl eog
+            maxslope1, ... (7) Slope max 1
+            slope1, ... (8) Slope max 1
+            (neg_cross-pos_cross), ... (9) Duration
+            thisScore,... %(10) direction REM
+            dirREM,... %(11) direction REM
             ]]; 
     else
         lastREM=peak_cross;
@@ -259,28 +218,28 @@ for nREM=1:length(pos_candidates)
             eog_BP(peak_cross),...
             thisScore,...
             maxslope1,...
-            maxslope2,...
+            slope1,...
             4]];
     end   
 end
 
 
-fprintf('\n>>>> %g horizontal (%2.2f /min) REMs detected\n\n',size(REMs,1),size(REMs,1)/(length(EOG1)/param.Fs/60))
+fprintf('\n>>>> %g horizontal (%2.2f /min) REMs detected\n\n',size(REMs,1),size(REMs,1)/(length(HEOG)/param.Fs/60))
 
 %% Give an overview of results
 if displayFlag
     fprintf('>>> %g REMs detected out of %g\n',size(REMs,1),size(REMs,1)+size(false_detection,1))
     %
     figure;
-    plot(eog1_Broad,'r'); hold on;
+    plot(HEOG_Broad,'r'); hold on;
     plot(eog2_Broad,'b'); hold on;
     % REMs
-    scatter(REMs(REMs(:,end)==1,1),eog1_Broad(REMs(REMs(:,end)==1,1)),'og','filled')
+    scatter(REMs(REMs(:,end)==1,1),HEOG_Broad(REMs(REMs(:,end)==1,1)),'og','filled')
     scatter(REMs(REMs(:,end)==2,1),eog2_Broad(REMs(REMs(:,end)==2,1)),'dg','filled')
     % FAs
     TypeMarker='ds+x';
     for nType=1:4
-    scatter(false_detection(false_detection(:,end)==nType & false_detection(:,end-1)==1,1),eog1_Broad(false_detection(false_detection(:,end)==nType & false_detection(:,end-1)==1,1)),'Marker',TypeMarker(nType),'MarkerFaceColor','r')
+    scatter(false_detection(false_detection(:,end)==nType & false_detection(:,end-1)==1,1),HEOG_Broad(false_detection(false_detection(:,end)==nType & false_detection(:,end-1)==1,1)),'Marker',TypeMarker(nType),'MarkerFaceColor','r')
     scatter(false_detection(false_detection(:,end)==nType & false_detection(:,end-1)==2,1),eog2_Broad(false_detection(false_detection(:,end)==nType & false_detection(:,end-1)==2,1)),'Marker',TypeMarker(nType),'MarkerFaceColor','m')
     end
     figure;
@@ -288,10 +247,10 @@ if displayFlag
     
     figure; TA_hREMs=[]; TA_vREMs=[];
     REMs(REMs(:,1)<1*Fs+1,:)=[];
-    REMs(REMs(:,1)>size(eog1_BP,2)-2*Fs,:)=[];
+    REMs(REMs(:,1)>size(HEOG_BP,2)-2*Fs,:)=[];
     for nR=1:size(REMs,1)
         if REMs(nR,end)==1
-            TA_hREMs=[TA_hREMs ; eog1_Broad(REMs(nR,1)+(-1*Fs:2*Fs))*sign(REMs(nR,6))-mean(eog1_Broad(REMs(nR,1)+(-1*Fs:-0.5*Fs)))];
+            TA_hREMs=[TA_hREMs ; HEOG_Broad(REMs(nR,1)+(-1*Fs:2*Fs))*sign(REMs(nR,6))-mean(HEOG_Broad(REMs(nR,1)+(-1*Fs:-0.5*Fs)))];
             
         else
             TA_vREMs=[TA_vREMs ; eog2_Broad(REMs(nR,1)+(-1*Fs:2*Fs))*sign(REMs(nR,6))-mean(eog2_Broad(REMs(nR,1)+(-1*Fs:-0.5*Fs)))];
