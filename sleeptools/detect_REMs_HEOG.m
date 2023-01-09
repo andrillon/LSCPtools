@@ -205,11 +205,14 @@ for nREM=1:length(pos_candidates)
             peakTimeeog, ... (5) Peak EOGs time
             HEOG_BP(peak_cross), ... (6) Peak ampl eog
             maxslope1, ... (7) Slope max 1
-            slope1, ... (8) Slope max 1
+            slope1, ... (8) Slope 1
             (neg_cross-pos_cross), ... (9) Duration
             thisScore,... %(10) direction REM
             dirREM,... %(11) direction REM
-            ]]; 
+            (peak_cross-begin)/Fs,... %(12) rise time
+            (ending-peak_cross)/Fs,... %(13) fall time
+            (peak_cross-begin)/(ending-peak_cross),... %(14) deflection time
+           ]]; 
     else
         lastREM=peak_cross;
         false_detection=[false_detection ; [
