@@ -169,11 +169,11 @@ for nREM=1:length(pos_candidates)
     if peak_cross-0.5*Fs<1 || peak_cross+0.5*Fs>length(HEOG)
         continue;
     end
-    thisrealeog=eog_Broad((-0.5*Fs:0.5*Fs)+peak_cross);
-    thisrealeog=abs(thisrealeog-nanmean(thisrealeog(1:200)));
+    thisrealeog=eog_Broad(begin:ending);
+    thisrealeog=(abs(thisrealeog));
     max_real1=max(thisrealeog);
-    timemax_real1=find(thisrealeog==max_real1); timemax_real1=timemax_real1(1);
-    peakTimeeog=peak_cross - 0.5*Fs + round(timemax_real1);
+    timemax_real1=find(thisrealeog==max_real1); timemax_real1=timemax_real1(1)+begin;
+%     peakTimeeog=peak_cross - 0.5*Fs + round(timemax_real1);
     
     if HEOG_BP(peak_cross)>thresholdParam(1)
         dirREM=1;
@@ -202,7 +202,7 @@ for nREM=1:length(pos_candidates)
             ending, ... (2) End
             peak_cross ... (3) Peak prod time
             slopeTimeeog, ... (4) slope peak time
-            peakTimeeog, ... (5) Peak EOGs time
+            timemax_real1, ... (5) Peak EOGs time
             HEOG_BP(peak_cross), ... (6) Peak ampl eog
             maxslope1, ... (7) Slope max 1
             slope1, ... (8) Slope 1
@@ -212,6 +212,7 @@ for nREM=1:length(pos_candidates)
             (peak_cross-begin)/Fs,... %(12) rise time
             (ending-peak_cross)/Fs,... %(13) fall time
             (peak_cross-begin)/(ending-peak_cross),... %(14) deflection time
+            max_real1,... %(15) peak broadband EOG
            ]]; 
     else
         lastREM=peak_cross;
