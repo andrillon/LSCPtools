@@ -172,6 +172,7 @@ for nREM=1:length(pos_candidates)
     thisrealeog=eog_Broad(begin:ending);
     thisrealeog=(abs(thisrealeog));
     max_real1=max(thisrealeog);
+    amp_start=thisrealeog(1);
     timemax_real1=find(thisrealeog==max_real1); timemax_real1=timemax_real1(1)+begin;
 %     peakTimeeog=peak_cross - 0.5*Fs + round(timemax_real1);
     
@@ -213,6 +214,7 @@ for nREM=1:length(pos_candidates)
             (ending-peak_cross)/Fs,... %(13) fall time
             (peak_cross-begin)/(ending-peak_cross),... %(14) deflection time
             max_real1,... %(15) peak broadband EOG
+            amp_start,... %(15) peak broadband EOG
            ]]; 
     else
         lastREM=peak_cross;
