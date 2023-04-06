@@ -38,7 +38,7 @@ elseif contourF==2
     cfg.style='contour';
 end
 if newF
-    cfg.figure='yes'
+    cfg.figure='yes';
 else
     cfg.figure='gcf';
 end
