@@ -1,6 +1,6 @@
 function [realpos realneg]=get_cluster_permutation_aov(data,group,montecarloalpha,clusteralpha,npermutation,sTime,model,contVarIndex)
 
-% Input
+% Input 
 % - data: subjects/conditions * times)
 % - group: describes lines
 % - montecarloalpha
