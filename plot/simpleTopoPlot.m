@@ -1,4 +1,4 @@
-function simpleTopoPlot(data, pos, labels,labelsFlag,cmap)
+simplfunction simpleTopoPlot(data, pos, labels,labelsFlag,cmap)
 %simpleTopoPlot(data, pos, labels,labelsFlag,cmap)
 
 if nargin<4

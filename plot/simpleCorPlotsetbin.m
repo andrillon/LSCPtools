@@ -84,7 +84,7 @@ if lineF
     plot(Xbin,Ybin,'Color',Prop{2},'LineWidth',2);
 end
 % scatter(allallPower_binned,allallPC_binned)
-if ~isempty(corType)
+if ~isempty(corType) && isempty(findstr(corType,'nofit'))
     [b,stats]=robustfit(X,Y);
     plot((-2*max(abs(X)):(4*max(abs(X)))/10000:2*max(abs(X))),(-2*max(abs(X)):(4*max(abs(X)))/10000:2*max(abs(X)))*b(2)+b(1),'Color',Prop{2},'LineWidth',2,'LineStyle','--');
     % xlim([-2.1 2.1])
