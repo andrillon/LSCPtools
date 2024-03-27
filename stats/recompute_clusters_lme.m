@@ -1,65 +1,5 @@
-function [realpos,realneg, rd, rdpv, pd, pdpv, rdaov, rdaovpv, pdaov, pdaovpv]=get_cluster_permutation_lme(data,group,formulaNames,catvars,formula,montecarloalpha,clusteralpha,npermutation,sTime)
+function [realpos,realneg]=recompute_clusters_lme(rd, rdpv, pd, pdpv,montecarloalpha,clusteralpha,npermutation,sTime)
 
-% Input
-% - data: cell array (1 cell per condition:  channels * times * subjects
-% - montecarloalpha
-% - clusteralpha
-% - npermutation
-% - sTime
-%% Bootstraping
-all_perms=nan(size(data,1),npermutation);
-for nperm=1:npermutation
-    all_perms(:,nperm)=randperm(size(data,1));
-end
-
-%% Stats
-fprintf('Calculating LM...');
-%     tic;
-rdm = data;
-fprintf('... sample %4.0f perm %4.0f',0,0)
-for nt=1:size(data,2)
-    table=array2table([rdm(:,nt) group],'VariableNames',formulaNames);
-    findcatvars=find(catvars);
-    for e=findcatvars
-        table.(formulaNames{e})=categorical(table.(formulaNames{e}));
-    end
-    mdl = fitlme(table,formula);
-    if nt==1
-        rd=nan(size(data,2),size(mdl.Coefficients,1)-1);
-        pd=nan(npermutation,size(data,2),size(mdl.Coefficients,1)-1);
-        rdpv=nan(size(data,2),size(mdl.Coefficients,1)-1);
-        pdpv=nan(npermutation,size(data,2),size(mdl.Coefficients,1)-1);
-
-        rdaov=nan(size(data,2),1);
-        pdaov=nan(npermutation,1);
-        rdaovpv=nan(size(data,2),1);
-        pdaovpv=nan(npermutation,size(data,2),1);
-    end
-    rd(nt,:) = double(mdl.Coefficients.tStat(2:size(mdl.Coefficients,1)));
-    rdpv(nt,:) = double(mdl.Coefficients.pValue(2:size(mdl.Coefficients,1)));
-    aov_mdl=anova(mdl);
-    rdaov(nt,:) = aov_mdl.FStat(end);
-    rdaovpv(nt,:) = aov_mdl.pValue(end);
-    for nperm=1:npermutation
-        fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b... sample %4.0f perm %4.0f',nt,nperm)
-        pdm = data(all_perms(:,nperm),:);
-        table=array2table([pdm(:,nt) group],'VariableNames',formulaNames);
-        for e=findcatvars
-            table.(formulaNames{e})=categorical(table.(formulaNames{e}));
-        end
-        mdl = fitlme(table,formula);
-
-        pd(nperm,nt,:) = double(mdl.Coefficients.tStat(2:size(mdl.Coefficients,1)));
-        pdpv(nperm,nt,:) = double(mdl.Coefficients.pValue(2:size(mdl.Coefficients,1)));
-
-        aov_mdl=anova(mdl);
-    pdaov(nperm,nt,:) = aov_mdl.FStat(end);
-    pdaovpv(nperm,nt,:) = aov_mdl.pValue(end);
-
-    end
-end
-%     toc;
-fprintf('\n')
 
 %% cluster statistics
 for k=1:size(rd,2)
@@ -70,7 +10,7 @@ for k=1:size(rd,2)
     realneg{k}.pmonte = zeros(size(realneg{k}.tclusters));
     
     for isim = 1:npermutation
-        [simpos, simneg] =  findcluster(squeeze(pd(isim,:,k))', squeeze(pdpv(isim,:,k))', clusteralpha);
+        [simpos, simneg] =  findcluster(squeeze(pd(isim,:,k)), squeeze(pdpv(isim,:,k)), clusteralpha);
         
         maxval = max(simpos.tclusters);
         if ~isempty(maxval)

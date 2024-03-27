@@ -13,14 +13,18 @@ if nargin<7
     model='full';
 end
 if nargin<7
-    contVarIndex=[];;
+    contVarIndex=[];
 end
 %% Bootstrap
 % fprintf('Calculating permutations...');
 if size(group,2)==1
-    data=data(~isnan(group),:);
-    group=group(~isnan(group));
-    
+    if ~iscategorical(group)
+        data=data(~isnan(group),:);
+        group=group(~isnan(group));
+    else
+        data=data(~isundefined(group),:);
+        group=group(~isundefined(group));
+    end
     ntime=size(data,2);
     nsuj=size(data,1);
     df1=length(unique(group))-1;
