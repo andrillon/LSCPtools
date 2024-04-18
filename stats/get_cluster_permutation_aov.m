@@ -52,10 +52,11 @@ if size(group,2)==1
     fprintf('Calculating F-values (anova)...');
     %     tic;
     rdm = data;
-    
+    rv=[];
     for nt=1:size(data,2)
         [~,TAB,~] = anova1(rdm(:,nt), group,'off');
         rd(nt) = TAB{2,5};
+        rv(nt) = TAB{2,6};
         
         for nperm=1:npermutation
             pdm = data(all_perms(:,nperm),:);

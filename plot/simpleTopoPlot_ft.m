@@ -39,8 +39,10 @@ elseif contourF==2
 end
 if newF
     cfg.figure='yes';
+    cfg.newfigure='yes';
 else
     cfg.figure='gcf';
+    cfg.newfigure='no';
 end
 dat=[];
 dat.avg=data;

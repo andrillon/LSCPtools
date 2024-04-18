@@ -34,7 +34,8 @@ for k=1:size(rd,2)
         [peakv,peaki] = max(rd(samples));
         cintsamples = find(samples);
         peakt = sTime(cintsamples(peaki));
-        fprintf('\t effect %g: pos | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f]; ... \n', k, pmonte(ic), cint, peakt);
+        tvalue = realpos{k}.tclusters(ic);
+        fprintf('\t effect %g: pos | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f; t-value: %1.3f]; ... \n', k, pmonte(ic), cint, peakt, tvalue);
         
     end
     
@@ -51,7 +52,8 @@ for k=1:size(rd,2)
         [peakv,peaki] = min(rd(samples));
         cintsamples = find(samples);
         peakt = sTime(cintsamples(peaki));
-        fprintf('\t effect %g: neg | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f]; ... \n', k, pmonte(ic), cint, peakt);
+        tvalue = realneg{k}.tclusters(ic);
+        fprintf('\t effect %g: neg | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f; t-value: %1.3f]; ... \n', k, pmonte(ic), cint, peakt, tvalue);
         
     end
     fprintf('\n')
