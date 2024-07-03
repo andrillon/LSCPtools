@@ -36,7 +36,7 @@ if nargin<5
 end
 if statsF(1)==1 && numel(statsF)==1
     statsF(2)=0.05;
-elseif statsF(1)==1 && numel(statsF)==1
+else
     statsF=[2 0.05 0.05 200];
 end
 if nargin<6
@@ -60,6 +60,10 @@ end
 
 if statsF(1)==1 && length(statsF)<3
     statsF(3)=0;
+end
+if ~isempty(find(sum(isnan(y),2)==size(y,2)))
+    y(find(sum(isnan(y),2)==size(y,2)),:)=[];
+    warning('remove lines with only NaNs');
 end
 pV=[];
 hplot=[];
