@@ -34,10 +34,12 @@ end
 if nargin<5
     statsF=0;
 end
-if statsF(1)==1 && numel(statsF)==1
-    statsF(2)=0.05;
-else
-    statsF=[2 0.05 0.05 200];
+if statsF(1)~=0
+    if statsF(1)==1 && numel(statsF)==1
+        statsF(2)=0.05;
+    else
+        statsF=[2 0.05 0.05 200];
+    end
 end
 if nargin<6
     lineF='-';

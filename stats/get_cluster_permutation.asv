@@ -103,7 +103,7 @@ for iCond = 1:Ncond
             [peakv,peaki] = max(rd{iCond}(ie,samples));
             cintsamples = find(samples);
             peakt = sTime(cintsamples(peaki));
-            meanV=squeeze(mean(rdm(ie,samples,:),2));
+            meanV=mean(rd{iCond}(ie,samples),2);
             cohenD=mean(meanV)/std(meanV);
             tVal=mean(meanV)/(std(meanV)/sqrt(length(meanV)));
             fprintf('\tcond %d elec %d | pos | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f] | Cohen D: %g | tVal: %g; ... \n', iCond,ie, pmonte(ic), cint, peakt,cohenD,tVal);
@@ -124,10 +124,7 @@ for iCond = 1:Ncond
             [peakv,peaki] = min(rd{iCond}(ie,samples));
             cintsamples = find(samples);
             peakt = sTime(cintsamples(peaki));
-            meanV=squeeze(mean(rdm(ie,samples,:),2));
-            cohenD=mean(meanV)/std(meanV);
-            tVal=mean(meanV)/(std(meanV)/sqrt(length(meanV)));
-            fprintf('\tcond %d elec %d | neg | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f] | Cohen D: %g | tVal: %g; ... \n', iCond,ie, pmonte(ic), cint, peakt,cohenD,tVal);
+            fprintf('\tcond %d elec %d | neg | p-value : %0.4f | time :  %1.3f %1.3f [peak : %1.3f]; ... \n', iCond,ie, pmonte(ic), cint, peakt);
             
         end
     end
